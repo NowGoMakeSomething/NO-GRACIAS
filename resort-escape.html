@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>NO GRACIAS: Time Share Survival</title>
+<style>
+  /* === Estilos globales === */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #0b1d2a;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    user-select: none;
+  }
+  #wrapper {
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    flex-direction: column;
+  }
+  /* Contenedor del canvas, con overlays encima */
+  #stage {
+    position: relative;
+    width: 800px; height: 600px;
+    background: #000;
+    box-shadow: 0 0 40px rgba(0,0,0,0.7);
+    /* Escala uniforme para encajar en pantallas pequeñas */
+    transform-origin: center center;
+  }
+  canvas {
+    display: block;
+    width: 800px; height: 600px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  /* Responsive: en móvil/pantalla pequeña, escalar el stage entero
+     manteniendo el ratio interno (800x600) */
+  @media (max-width: 820px), (max-height: 620px) {
+    #wrapper { padding: 0; }
+    #stage {
+      width: 100vw;
+      height: calc(100vw * 0.75); /* 600/800 = 0.75 */
+      max-height: 100vh;
+      max-width: calc(100vh / 0.75);
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  /* Overlays (menu, pausa, victoria, etc.) */
+  .overlay {
+    position: absolute; inset: 0;
+    display: flex; justify-content: center; align-items: center;
+    flex-direction: column;
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  .hidden { display: none !important; }
+  h1 {
+    font-size: 48px;
+    color: #ffd84d;
+    text-shadow: 4px 4px 0 #c0392b;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+  h2 {
+    font-size: 24px;
+    color: #1abc9c;
+    margin-bottom: 30px;
+  }
+  p { font-size: 16px; line-height: 1.6; margin-bottom: 12px; max-width: 600px; }
+  button {
+    margin-top: 20px;
+    padding: 14px 28px;
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    font-weight: bold;
+    background: #ffd84d;
+    color: #2c3e50;
+    border: 4px solid #2c3e50;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: transform 0.1s;
+  }
+  button:hover { transform: scale(1.05); background: #ffe680; }
+  button:active { transform: scale(0.95); }
+  /* Botón gigante del minijuego de escape */
+  #escapeBtn {
+    margin-top: 24px;
+    padding: 30px 50px;
+    font-size: 32px;
+    background: #e74c3c;
+    color: #fff;
+    border: 6px solid #fff;
+    border-radius: 12px;
+    box-shadow: 0 0 30px #e74c3c;
+    animation: pulse 0.6s infinite alternate;
+  }
+  @keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+  }
+  /* Tooltip de zona */
+  #tooltip {
+    position: absolute;
+    bottom: 80px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    border: 2px solid #ffd84d;
+    color: #fff;
+    padding: 10px 18px;
+    font-size: 14px;
+    z-index: 5;
+    max-width: 500px;
+    text-align: center;
+  }
+  /* Info de controles abajo */
+  .controls-help {
+    margin-top: 14px;
+    font-size: 12px;
+    color: #aaa;
+    text-align: center;
+  }
+  /* Barra de paciencia en escape */
+  #patienceBar {
+    width: 500px; height: 24px;
+    background: #222;
+    border: 3px solid #fff;
+    margin: 12px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  #patienceFill {
+    height: 100%;
+    background: linear-gradient(90deg, #e74c3c, #f39c12, #2ecc71);
+    width: 100%;
+    transition: width 0.1s linear;
+  }
+  #patienceLabel {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: bold;
+    text-shadow: 1px 1px 0 #000;
+  }
+  /* Oferta flotante del minijuego */
+  #offerText {
+    font-size: 22px;
+    color: #ffd84d;
+    margin: 10px 0;
+    min-height: 30px;
+    font-weight: bold;
+  }
+  .closer-art {
+    font-size: 100px;
+    margin-bottom: 10px;
+  }
+  /* === Controles táctiles para móvil === */
+  #touchControls {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 4;
+  }
+  #joystickBase {
+    position: absolute;
+    left: 20px; bottom: 20px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.35);
+    border: 3px solid rgba(255,255,255,0.5);
+    pointer-events: auto;
+    touch-action: none;
+  }
+  #joystickKnob {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: rgba(255,216,77,0.85);
+    border: 3px solid #fff;
+    pointer-events: none;
+  }
+  #actionBtn {
+    position: absolute;
+    right: 25px; bottom: 45px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(231,76,60,0.85);
+    border: 4px solid #fff;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 16px;
+    pointer-events: auto;
+    touch-action: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #actionBtn:active { transform: scale(0.92); background: rgba(231,76,60,1); }
+  #pauseBtn {
+    position: absolute;
+    right: 12px; top: 70px;
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.55);
+    border: 2px solid #fff;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 18px;
+    pointer-events: auto;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* En pantallas grandes (no táctiles), atenuar un poco los controles */
+  @media (hover: hover) and (pointer: fine) {
+    #joystickBase, #actionBtn { opacity: 0.55; }
+    #joystickBase:hover, #actionBtn:hover { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <div id="stage">
+    <canvas id="game" width="800" height="600"></canvas>
+
+    <!-- Pantalla de inicio -->
+    <div id="startScreen" class="overlay">
+      <h1>RESORT ESCAPE</h1>
+      <h2>All-Inclusive Survival</h2>
+      <p>Eres un turista en la Riviera Maya. Sobrevive <b>7 días</b> en el resort manteniendo tus barras llenas
+         mientras evitas a las <b style="color:#ffd84d">CLOSERS DE TIMESHARE</b>.</p>
+      <p>Recarga <b style="color:#f39c12">Bronceado</b> en la playa/piscina, <b style="color:#e67e22">Hambre</b> en el buffet,
+         <b style="color:#3498db">Energía</b> en el spa. Duerme en tu habitación para avanzar al siguiente día.</p>
+      <p><i>Recuerda: di NO, GRACIAS.</i></p>
+      <button id="startBtn">EMPEZAR VACACIONES</button>
+      <div class="controls-help">
+        🖥️ WASD / Flechas: mover &nbsp;·&nbsp; ESPACIO: interactuar / decir NO &nbsp;·&nbsp; ESC: pausa<br>
+        📱 Móvil: joystick virtual (abajo izq) &nbsp;·&nbsp; botón rojo: NO, GRACIAS / interactuar &nbsp;·&nbsp; II: pausa
+      </div>
+    </div>
+
+    <!-- Pantalla de pausa -->
+    <div id="pauseScreen" class="overlay hidden">
+      <h1>PAUSA</h1>
+      <p>Presiona ESC para continuar.</p>
+    </div>
+
+    <!-- Pantalla de minijuego de escape -->
+    <div id="escapeScreen" class="overlay hidden">
+      <div class="closer-art">👱‍♀️📋</div>
+      <h2 style="color:#ffd84d">¡Te agarró una closer!</h2>
+      <div id="offerText">"¿Tienen 90 minutitos?"</div>
+      <div id="patienceBar">
+        <div id="patienceFill"></div>
+        <div id="patienceLabel">PACIENCIA: 100</div>
+      </div>
+      <button id="escapeBtn">NO, GRACIAS</button>
+      <div class="controls-help">ESPACIO o CLICK para resistir. Llega a 150 para escapar.</div>
+    </div>
+
+    <!-- Pantalla de game over -->
+    <div id="gameOverScreen" class="overlay hidden">
+      <h1 style="color:#e74c3c">GAME OVER</h1>
+      <h2 id="gameOverReason">Te fuiste del resort sin disfrutar</h2>
+      <p id="gameOverStats"></p>
+      <button id="retryBtn">Jugar de nuevo</button>
+    </div>
+
+    <!-- Pantalla de victoria -->
+    <div id="winScreen" class="overlay hidden">
+      <h1 style="color:#2ecc71">¡SOBREVIVISTE!</h1>
+      <h2>Te vas con la dignidad intacta y sin cuotas anuales de mantenimiento</h2>
+      <p id="winStats"></p>
+      <button id="playAgainBtn">Jugar de nuevo</button>
+    </div>
+
+    <!-- Tooltip de zona -->
+    <div id="tooltip" class="hidden"></div>
+
+    <!-- Controles táctiles (móvil y mouse) -->
+    <div id="touchControls">
+      <div id="joystickBase">
+        <div id="joystickKnob"></div>
+      </div>
+      <button id="actionBtn">NO,<br>GRACIAS</button>
+      <button id="pauseBtn">II</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   NO GRACIAS: Time Share Survival
+   Juego top-down 2D estilo Zelda. Vanilla JS + Canvas.
+   ============================================================ */
+
+// === Constantes globales ===
+const CANVAS_W = 800;
+const CANVAS_H = 600;
+const WORLD_W = 2000;
+const WORLD_H = 2000;
+const TILE = 24;          // tamaño base de sprites
+const DAY_DURATION = 90;  // segundos por día
+const TOTAL_DAYS = 7;
+
+// Paleta de colores tropicales
+const COLORS = {
+  grass: '#3fa34d',
+  grassDark: '#2e8b3a',
+  sand: '#f4d77a',
+  sandDark: '#d4b860',
+  water: '#3ec4d9',
+  waterDark: '#2a9eb0',
+  path: '#c9a875',
+  pathDark: '#a88b5e',
+  spaFloor: '#e8d5b7',
+  buffetFloor: '#c97c5d',
+  roomFloor: '#8e6c8a',
+  white: '#ffffff',
+  red: '#e74c3c',
+  green: '#27ae60',
+  yellow: '#ffd84d',
+  blue: '#3498db',
+  closerHair: '#f7dc6f',
+  closerDress: '#1abc9c',
+  closerSkin: '#fad7a0',
+  playerHat: '#27ae60',
+  playerSkin: '#fad7a0',
+  playerShirt: '#ffffff',
+  playerShorts: '#e74c3c',
+  shadow: 'rgba(0,0,0,0.25)'
+};
+
+// Frases reales de closers (para el detect)
+const CLOSER_PHRASES = [
+  "¿Tienen 90 minutitos?",
+  "Solo desayuno, sin compromiso",
+  "Mi jefe me autorizó un descuento especial",
+  "Es una inversión, no un gasto",
+  "Esta oferta es solo hoy",
+  "Te incluyo el transfer al aeropuerto",
+  "¿Cuántos hijos tienen?",
+  "Imagínate jubilarse aquí"
+];
+
+// Ofertas del minijuego (escalando)
+const ESCAPE_OFFERS = [
+  "Membresía Hall of Fame - $80,000 USD",
+  "Con descuento especial - $45,000 USD",
+  "Mi gerente autoriza - $25,000 USD",
+  "Programa Trial - solo $3,500",
+  "Sampler Pack - $1,200",
+  "Solo escúchame 5 minutos más"
+];
+
+// === Estado del input táctil (joystick virtual) ===
+// dirX/dirY van de -1 a 1, los lee Player.update() igual que las teclas
+const touchInput = {
+  dirX: 0,
+  dirY: 0,
+  active: false,
+  pointerId: null
+};
+
+// Inputs (teclado)
+const keys = {};
+window.addEventListener('keydown', (e) => {
+  keys[e.key.toLowerCase()] = true;
+  // Evitar scroll con flechas/espacio
+  if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+  }
+  // ESC pausa global
+  if (e.key === 'Escape') game.togglePause();
+});
+window.addEventListener('keyup', (e) => {
+  keys[e.key.toLowerCase()] = false;
+});
+
+// ============================================================
+// Utilidades
+// ============================================================
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
+function dist(ax, ay, bx, by) { const dx = ax-bx, dy = ay-by; return Math.sqrt(dx*dx+dy*dy); }
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function pick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+// Rectángulo con borde (helper de pixel art)
+function pixelRect(ctx, x, y, w, h, fill, stroke=null) {
+  ctx.fillStyle = fill;
+  ctx.fillRect(x, y, w, h);
+  if (stroke) {
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x+0.5, y+0.5, w-1, h-1);
+  }
+}
+
+// ============================================================
+// Clase Zone: zonas del mapa (playa, piscina, buffet, spa, habitación)
+// ============================================================
+class Zone {
+  constructor(name, x, y, w, h, type, color, recharge) {
+    this.name = name;       // nombre visible
+    this.x = x; this.y = y; // esquina superior izq.
+    this.w = w; this.h = h;
+    this.type = type;       // identificador interno
+    this.color = color;     // color del piso
+    this.recharge = recharge; // efectos al usar (objeto con keys energy/hunger/tan)
+    this.visited = false;   // para mostrar tooltip solo la primera vez
+    this.safe = (type === 'spa' || type === 'room'); // sin closers dentro
+  }
+  contains(px, py) {
+    return px >= this.x && px <= this.x+this.w && py >= this.y && py <= this.y+this.h;
+  }
+  // Dibuja el piso + decoraciones específicas de cada zona
+  draw(ctx, camX, camY) {
+    const dx = this.x - camX, dy = this.y - camY;
+    // Solo si está en pantalla (optimización simple)
+    if (dx + this.w < 0 || dx > CANVAS_W || dy + this.h < 0 || dy > CANVAS_H) return;
+
+    // Piso base
+    pixelRect(ctx, dx, dy, this.w, this.h, this.color);
+
+    // Borde decorativo
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(dx, dy, this.w, this.h);
+
+    // Decoración por tipo
+    if (this.type === 'beach') {
+      // Camastros + sombrillas
+      for (let i = 0; i < 4; i++) {
+        const lx = dx + 40 + i * 80;
+        const ly = dy + 60;
+        pixelRect(ctx, lx, ly, 50, 20, '#fff', '#888');     // camastro
+        pixelRect(ctx, lx + 20, ly - 30, 10, 30, '#7b3f00'); // palo sombrilla
+        pixelRect(ctx, lx - 5, ly - 40, 40, 12, '#e74c3c'); // sombrilla roja
+      }
+      // Línea de mar
+      pixelRect(ctx, dx, dy + this.h - 30, this.w, 30, COLORS.water);
+      pixelRect(ctx, dx, dy + this.h - 30, this.w, 4, COLORS.waterDark);
+    }
+    else if (this.type === 'pool') {
+      // Piscina turquesa
+      const px = dx + 40, py = dy + 40, pw = this.w - 80, ph = this.h - 80;
+      pixelRect(ctx, px, py, pw, ph, COLORS.water);
+      pixelRect(ctx, px, py, pw, 4, COLORS.waterDark);
+      pixelRect(ctx, px, py+ph-4, pw, 4, COLORS.waterDark);
+      // "Reflejos" del agua
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      ctx.fillRect(px + 20, py + 20, 40, 4);
+      ctx.fillRect(px + 100, py + 60, 30, 4);
+    }
+    else if (this.type === 'buffet') {
+      // Mesas largas con comida
+      for (let i = 0; i < 3; i++) {
+        const tx = dx + 30, ty = dy + 30 + i * 50;
+        pixelRect(ctx, tx, ty, this.w - 60, 30, '#fff', '#555'); // mesa
+        // platos
+        for (let p = 0; p < 5; p++) {
+          pixelRect(ctx, tx + 10 + p*30, ty+8, 14, 14, p%2===0 ? '#f39c12' : '#e74c3c');
+        }
+      }
+    }
+    else if (this.type === 'spa') {
+      // Velas y plantas
+      for (let i = 0; i < 5; i++) {
+        const sx = dx + 20 + i*30, sy = dy + 20;
+        pixelRect(ctx, sx, sy, 12, 12, '#fff'); // vela
+        pixelRect(ctx, sx+4, sy-6, 4, 6, '#f39c12'); // llama
+      }
+      // Plantas en esquinas
+      pixelRect(ctx, dx + 10, dy + this.h - 30, 16, 20, COLORS.grass);
+      pixelRect(ctx, dx + this.w - 26, dy + this.h - 30, 16, 20, COLORS.grass);
+      // Texto "SPA"
+      ctx.fillStyle = '#8e6c8a';
+      ctx.font = 'bold 18px monospace';
+      ctx.fillText('🌿 SPA 🌿', dx + this.w/2 - 40, dy + this.h/2);
+    }
+    else if (this.type === 'room') {
+      // Cama central
+      const bx = dx + this.w/2 - 30, by = dy + this.h/2 - 20;
+      pixelRect(ctx, bx, by, 60, 40, '#fff', '#555');     // colchón
+      pixelRect(ctx, bx, by, 60, 12, '#e74c3c');          // almohada
+      pixelRect(ctx, bx + 8, by + 20, 44, 16, '#3498db'); // edredón
+      // Texto "ZZZ"
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 14px monospace';
+      ctx.fillText('💤 HABITACIÓN', dx + 10, dy + 20);
+    }
+
+    // Cartel con nombre de zona (arriba)
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(dx + 4, dy + 4, this.name.length * 9 + 10, 18);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 12px monospace';
+    ctx.fillText(this.name, dx + 9, dy + 17);
+  }
+}
+
+// ============================================================
+// Clase Player
+// ============================================================
+class Player {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.w = TILE; this.h = TILE;
+    this.speed = 3;
+    this.dir = 'down';      // dirección actual
+    this.walkFrame = 0;     // 0 o 1 para animación
+    this.walkTimer = 0;     // acumulador para alternar frame
+    this.moving = false;
+    this.invulnerable = 0;  // segundos restantes de invulnerabilidad
+  }
+
+  update(dt) {
+    let dx = 0, dy = 0;
+    if (keys['w'] || keys['arrowup'])    { dy -= 1; }
+    if (keys['s'] || keys['arrowdown'])  { dy += 1; }
+    if (keys['a'] || keys['arrowleft'])  { dx -= 1; }
+    if (keys['d'] || keys['arrowright']) { dx += 1; }
+
+    // Si no hay teclado, usar el joystick táctil
+    if (dx === 0 && dy === 0 && touchInput.active) {
+      dx = touchInput.dirX;
+      dy = touchInput.dirY;
+    }
+
+    // Dirección visual del sprite (la del componente dominante)
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) this.dir = 'left';
+      else if (dx > 0) this.dir = 'right';
+    } else {
+      if (dy < 0) this.dir = 'up';
+      else if (dy > 0) this.dir = 'down';
+    }
+
+    this.moving = (dx !== 0 || dy !== 0);
+
+    // Normalizar para evitar velocidad >1 en diagonal o magnitudes <1 del joystick
+    const mag = Math.sqrt(dx*dx + dy*dy);
+    if (mag > 1) { dx /= mag; dy /= mag; }
+
+    this.x += dx * this.speed;
+    this.y += dy * this.speed;
+
+    // Limitar al mundo
+    this.x = clamp(this.x, 0, WORLD_W - this.w);
+    this.y = clamp(this.y, 0, WORLD_H - this.h);
+
+    // Animación de caminar (alterna cada 200 ms)
+    if (this.moving) {
+      this.walkTimer += dt;
+      if (this.walkTimer >= 0.2) {
+        this.walkFrame = 1 - this.walkFrame;
+        this.walkTimer = 0;
+      }
+    } else {
+      this.walkFrame = 0;
+    }
+
+    // Decrementar invulnerabilidad
+    if (this.invulnerable > 0) this.invulnerable -= dt;
+  }
+
+  // Dibujo pixel art de Link tropical
+  draw(ctx, camX, camY) {
+    const x = this.x - camX, y = this.y - camY;
+
+    // Parpadeo durante invulnerabilidad
+    if (this.invulnerable > 0 && Math.floor(this.invulnerable * 10) % 2 === 0) return;
+
+    // Sombra
+    ctx.fillStyle = COLORS.shadow;
+    ctx.fillRect(x + 2, y + this.h - 3, this.w - 4, 4);
+
+    // Cuerpo (24x24) construido en 6x6 píxeles de 4x4
+    // Sombrero verde (fila superior)
+    pixelRect(ctx, x + 4, y, 16, 6, COLORS.playerHat);
+    pixelRect(ctx, x + 2, y + 4, 20, 4, COLORS.playerHat);
+    // Cara
+    pixelRect(ctx, x + 6, y + 8, 12, 6, COLORS.playerSkin);
+    // Ojos según dirección
+    ctx.fillStyle = '#000';
+    if (this.dir === 'left') {
+      ctx.fillRect(x + 7, y + 10, 2, 2);
+    } else if (this.dir === 'right') {
+      ctx.fillRect(x + 15, y + 10, 2, 2);
+    } else if (this.dir === 'up') {
+      // sin ojos visibles (mirando arriba)
+    } else {
+      ctx.fillRect(x + 9, y + 10, 2, 2);
+      ctx.fillRect(x + 13, y + 10, 2, 2);
+    }
+    // Camiseta blanca
+    pixelRect(ctx, x + 4, y + 14, 16, 6, COLORS.playerShirt);
+    // Shorts rojos
+    pixelRect(ctx, x + 4, y + 20, 16, 4, COLORS.playerShorts);
+    // Piernas con animación
+    const legOffset = this.walkFrame === 0 ? 0 : 2;
+    ctx.fillStyle = COLORS.playerSkin;
+    ctx.fillRect(x + 6 + legOffset, y + 22, 4, 2);
+    ctx.fillRect(x + 14 - legOffset, y + 22, 4, 2);
+  }
+
+  // AABB para colisiones
+  getBounds() {
+    return { x: this.x, y: this.y, w: this.w, h: this.h };
+  }
+}
+
+// ============================================================
+// Clase Closer (enemigo)
+// ============================================================
+class Closer {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.w = TILE; this.h = TILE;
+    this.speed = 1.5;
+    this.chaseSpeed = 2;
+    this.detectRange = 150;
+    this.state = 'patrol';     // 'patrol' o 'chase'
+    this.targetX = x; this.targetY = y;
+    this.phrase = '';
+    this.phraseTimer = 0;
+    this.walkFrame = 0;
+    this.walkTimer = 0;
+    this.pickNewPatrol();
+  }
+
+  pickNewPatrol() {
+    // Elige un punto aleatorio cercano para patrullar
+    this.targetX = clamp(this.x + rand(-200, 200), 50, WORLD_W - 50);
+    this.targetY = clamp(this.y + rand(-200, 200), 50, WORLD_H - 50);
+  }
+
+  update(dt, player, safeZones) {
+    // ¿El jugador está en una zona segura? Si sí, no perseguir
+    let playerSafe = false;
+    for (const z of safeZones) {
+      if (z.contains(player.x + player.w/2, player.y + player.h/2)) {
+        playerSafe = true; break;
+      }
+    }
+
+    const d = dist(this.x, this.y, player.x, player.y);
+
+    // Detectar / perseguir
+    if (!playerSafe && d < this.detectRange) {
+      if (this.state !== 'chase') {
+        // Acabo de detectar → elige frase
+        this.phrase = pick(CLOSER_PHRASES);
+        this.phraseTimer = 3;
+      }
+      this.state = 'chase';
+      this.targetX = player.x; this.targetY = player.y;
+    } else {
+      this.state = 'patrol';
+      this.phraseTimer = 0;
+    }
+
+    // Mover hacia el target
+    const dx = this.targetX - this.x;
+    const dy = this.targetY - this.y;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    if (len > 2) {
+      const sp = (this.state === 'chase') ? this.chaseSpeed : this.speed;
+      this.x += (dx/len) * sp;
+      this.y += (dy/len) * sp;
+    } else if (this.state === 'patrol') {
+      this.pickNewPatrol();
+    }
+
+    // Si está dentro de zona segura, salirse (no patrullar ahí)
+    for (const z of safeZones) {
+      if (z.contains(this.x + this.w/2, this.y + this.h/2)) {
+        // Buscar punto fuera
+        this.targetX = clamp(z.x - 60 + rand(-50, 50), 50, WORLD_W-50);
+        this.targetY = clamp(z.y - 60 + rand(-50, 50), 50, WORLD_H-50);
+      }
+    }
+
+    // Limitar al mundo
+    this.x = clamp(this.x, 0, WORLD_W - this.w);
+    this.y = clamp(this.y, 0, WORLD_H - this.h);
+
+    // Animación
+    this.walkTimer += dt;
+    if (this.walkTimer >= 0.2) {
+      this.walkFrame = 1 - this.walkFrame;
+      this.walkTimer = 0;
+    }
+
+    // Timer de frase
+    if (this.phraseTimer > 0) this.phraseTimer -= dt;
+  }
+
+  draw(ctx, camX, camY) {
+    const x = this.x - camX, y = this.y - camY;
+
+    // Sombra
+    ctx.fillStyle = COLORS.shadow;
+    ctx.fillRect(x + 2, y + this.h - 3, this.w - 4, 4);
+
+    // Pelo amarillo largo (sobresale por arriba)
+    pixelRect(ctx, x + 2, y - 4, 20, 12, COLORS.closerHair);
+    pixelRect(ctx, x, y + 4, 6, 14, COLORS.closerHair);   // mecha izquierda larga
+    pixelRect(ctx, x + 18, y + 4, 6, 14, COLORS.closerHair); // mecha derecha larga
+    // Cara
+    pixelRect(ctx, x + 6, y + 6, 12, 8, COLORS.closerSkin);
+    // Ojos
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x + 8, y + 9, 2, 2);
+    ctx.fillRect(x + 14, y + 9, 2, 2);
+    // Sonrisa (línea curva con 3 puntos)
+    ctx.fillRect(x + 9, y + 12, 2, 1);
+    ctx.fillRect(x + 11, y + 13, 2, 1);
+    ctx.fillRect(x + 13, y + 12, 2, 1);
+    // Vestido turquesa
+    pixelRect(ctx, x + 4, y + 14, 16, 8, COLORS.closerDress);
+    // Piernas animadas
+    const legOff = this.walkFrame === 0 ? 0 : 2;
+    ctx.fillStyle = COLORS.closerSkin;
+    ctx.fillRect(x + 6 + legOff, y + 22, 4, 2);
+    ctx.fillRect(x + 14 - legOff, y + 22, 4, 2);
+
+    // Ícono "!" al perseguir
+    if (this.state === 'chase') {
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = '#e74c3c';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x + this.w/2, y - 12, 8, 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#e74c3c';
+      ctx.font = 'bold 12px monospace';
+      ctx.fillText('!', x + this.w/2 - 3, y - 8);
+    }
+
+    // Frase flotante
+    if (this.phraseTimer > 0 && this.phrase) {
+      const phr = this.phrase;
+      ctx.font = 'bold 11px monospace';
+      const tw = ctx.measureText(phr).width;
+      const bx = x + this.w/2 - tw/2 - 6;
+      const by = y - 40;
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.fillRect(bx, by, tw + 12, 18);
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bx, by, tw + 12, 18);
+      ctx.fillStyle = '#000';
+      ctx.fillText(phr, bx + 6, by + 12);
+    }
+  }
+}
+
+// ============================================================
+// Partícula (efectos visuales: ✨ y ❌)
+// ============================================================
+class Particle {
+  constructor(x, y, symbol, color, life=1.5) {
+    this.x = x; this.y = y;
+    this.symbol = symbol;
+    this.color = color;
+    this.life = life;
+    this.maxLife = life;
+    this.vy = -30; // sube
+    this.vx = rand(-15, 15);
+  }
+  update(dt) {
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    this.life -= dt;
+  }
+  draw(ctx, camX, camY) {
+    const alpha = clamp(this.life / this.maxLife, 0, 1);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = this.color;
+    ctx.font = 'bold 20px monospace';
+    ctx.fillText(this.symbol, this.x - camX, this.y - camY);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ============================================================
+// Clase Game (controlador principal)
+// ============================================================
+class Game {
+  constructor() {
+    this.canvas = document.getElementById('game');
+    this.ctx = this.canvas.getContext('2d');
+    this.ctx.imageSmoothingEnabled = false;
+
+    this.state = 'menu'; // menu | playing | paused | escape | gameover | win
+    this.lastTime = 0;
+    this.dayNumber = 1;
+    this.dayTimeLeft = DAY_DURATION;
+    this.escapesSuccessful = 0;
+    this.totalTanSum = 0;
+    this.totalTanSamples = 0;
+
+    this.zones = [];
+    this.particles = [];
+
+    // Stats del jugador
+    this.energy = 100;
+    this.hunger = 100;
+    this.tan = 100;
+    // Timers de drenaje
+    this.energyTimer = 0;
+    this.hungerTimer = 0;
+    this.tanTimer = 0;
+
+    this.player = null;
+    this.closers = [];
+    this.activeCloser = null; // closer que te agarró (referencia)
+
+    // Estado del minijuego de escape
+    this.patience = 100;
+    this.escapeBtn = document.getElementById('escapeBtn');
+    this.offerIndex = 0;
+    this.offerTimer = 0;
+    this.escapeReleaseTimer = 0; // cooldown post-fallo
+
+    // Tooltip
+    this.tooltipEl = document.getElementById('tooltip');
+    this.tooltipTimer = 0;
+
+    // Tracking de tecla espacio (edge detect para "presión")
+    this.spaceDown = false;
+    this.spacePressedThisFrame = false;
+
+    this.setupZones();
+    this.bindUI();
+    this.bindGameKeys();
+    this.bindTouchControls();
+  }
+
+  // ===== Controles táctiles =====
+  bindTouchControls() {
+    const base = document.getElementById('joystickBase');
+    const knob = document.getElementById('joystickKnob');
+    const actionBtn = document.getElementById('actionBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+
+    // --- Joystick virtual (Pointer Events: funciona con touch y mouse) ---
+    const baseRadius = 70; // mitad del tamaño visual (140px)
+    const maxKnob = 50;    // distancia máxima del knob desde el centro
+
+    const updateKnob = (clientX, clientY) => {
+      const rect = base.getBoundingClientRect();
+      const cx = rect.left + rect.width/2;
+      const cy = rect.top + rect.height/2;
+      let dx = clientX - cx;
+      let dy = clientY - cy;
+      const mag = Math.sqrt(dx*dx + dy*dy);
+      if (mag > maxKnob) {
+        dx = (dx/mag) * maxKnob;
+        dy = (dy/mag) * maxKnob;
+      }
+      // Posicionar visualmente el knob
+      knob.style.left = (50 + (dx / baseRadius) * 50) + '%';
+      knob.style.top  = (50 + (dy / baseRadius) * 50) + '%';
+      // Magnitud normalizada (zona muerta 15%)
+      const norm = Math.min(1, mag / maxKnob);
+      if (norm < 0.15) {
+        touchInput.dirX = 0; touchInput.dirY = 0;
+      } else {
+        touchInput.dirX = (dx / maxKnob);
+        touchInput.dirY = (dy / maxKnob);
+      }
+    };
+
+    const resetKnob = () => {
+      knob.style.left = '50%';
+      knob.style.top  = '50%';
+      touchInput.dirX = 0; touchInput.dirY = 0;
+      touchInput.active = false;
+      touchInput.pointerId = null;
+    };
+
+    base.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      touchInput.active = true;
+      touchInput.pointerId = e.pointerId;
+      base.setPointerCapture(e.pointerId);
+      updateKnob(e.clientX, e.clientY);
+    });
+    base.addEventListener('pointermove', (e) => {
+      if (touchInput.active && e.pointerId === touchInput.pointerId) {
+        e.preventDefault();
+        updateKnob(e.clientX, e.clientY);
+      }
+    });
+    const endJoystick = (e) => {
+      if (e.pointerId === touchInput.pointerId) resetKnob();
+    };
+    base.addEventListener('pointerup', endJoystick);
+    base.addEventListener('pointercancel', endJoystick);
+    base.addEventListener('pointerleave', endJoystick);
+
+    // --- Botón de acción (NO GRACIAS / interactuar) ---
+    // En el minijuego: cada tap suma paciencia. En el mapa: interactúa con la zona.
+    actionBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (this.state === 'escape') {
+        this.escapePress();
+      } else if (this.state === 'playing') {
+        this.tryInteract();
+      } else if (this.state === 'menu') {
+        this.startGame();
+      } else if (this.state === 'gameover' || this.state === 'win') {
+        this.startGame();
+      }
+    });
+
+    // --- Botón de pausa ---
+    pauseBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      this.togglePause();
+    });
+
+    // --- Tap directo sobre el botón rojo del overlay de escape (ya funciona con click,
+    // pero aseguramos pointerdown para responder al primer toque sin delay) ---
+    document.getElementById('escapeBtn').addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (this.state === 'escape') this.escapePress();
+    });
+
+    // Prevenir scroll/zoom en el stage durante el juego en móvil
+    const stage = document.getElementById('stage');
+    stage.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
+  }
+
+  setupZones() {
+    // Posiciones de zonas en el mundo 2000x2000
+    // Cada zona tiene piso amplio para que el jugador pueda entrar
+    this.zones = [
+      new Zone('🏖️ PLAYA',     1500, 1500, 400, 400, 'beach',  COLORS.sand,        { tan: 40, energy: -5 }),
+      new Zone('🏊 PISCINA',    1500, 200,  400, 400, 'pool',   COLORS.water,       { tan: 25, energy: 15 }),
+      new Zone('🍤 BUFFET',     200,  200,  400, 400, 'buffet', COLORS.buffetFloor, { hunger: 50, energy: -5 }),
+      new Zone('💆 SPA',        200,  1500, 400, 400, 'spa',    COLORS.spaFloor,    { energy: 100 }),
+      new Zone('🛏️ HABITACIÓN', 850,  850,  300, 300, 'room',   COLORS.roomFloor,   { sleep: true })
+    ];
+  }
+
+  bindUI() {
+    // Pantallas
+    document.getElementById('startBtn').onclick = () => this.startGame();
+    document.getElementById('retryBtn').onclick = () => this.startGame();
+    document.getElementById('playAgainBtn').onclick = () => this.startGame();
+
+    // Nota: el botón del minijuego (escapeBtn) se enlaza en bindTouchControls()
+    // con pointerdown para responder al primer toque sin delay y sin duplicar.
+  }
+
+  bindGameKeys() {
+    // Detectar pulsación de espacio para interactuar/escape (edge-triggered)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === ' ' && !this.spaceDown) {
+        this.spaceDown = true;
+        if (this.state === 'escape') {
+          this.escapePress();
+        } else if (this.state === 'playing') {
+          this.tryInteract();
+        }
+      }
+    });
+    window.addEventListener('keyup', (e) => {
+      if (e.key === ' ') this.spaceDown = false;
+    });
+  }
+
+  // ===== Lifecycle =====
+  startGame() {
+    // Reset total
+    this.dayNumber = 1;
+    this.dayTimeLeft = DAY_DURATION;
+    this.escapesSuccessful = 0;
+    this.totalTanSum = 0;
+    this.totalTanSamples = 0;
+    this.energy = 100; this.hunger = 100; this.tan = 100;
+    this.energyTimer = 0; this.hungerTimer = 0; this.tanTimer = 0;
+    this.particles = [];
+
+    // Player en el centro del mundo (cerca de habitación)
+    this.player = new Player(1000 - TILE/2, 1000 - TILE/2);
+    this.spawnClosers();
+
+    // Resetear "visited" para tooltips
+    for (const z of this.zones) z.visited = false;
+
+    // Ocultar todas las pantallas
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('pauseScreen').classList.add('hidden');
+    document.getElementById('escapeScreen').classList.add('hidden');
+    document.getElementById('gameOverScreen').classList.add('hidden');
+    document.getElementById('winScreen').classList.add('hidden');
+    this.tooltipEl.classList.add('hidden');
+
+    this.state = 'playing';
+    this.lastTime = performance.now();
+  }
+
+  spawnClosers() {
+    // Número de closers según día
+    let count = 3;
+    if (this.dayNumber >= 3) count = 5;
+    if (this.dayNumber >= 5) count = 7;
+
+    this.closers = [];
+    const safeZones = this.zones.filter(z => z.safe);
+    let attempts = 0;
+    while (this.closers.length < count && attempts < 200) {
+      attempts++;
+      const cx = rand(100, WORLD_W - 100);
+      const cy = rand(100, WORLD_H - 100);
+      // No spawnear dentro de zonas seguras ni demasiado cerca del jugador
+      let bad = false;
+      for (const z of safeZones) {
+        if (z.contains(cx, cy)) { bad = true; break; }
+      }
+      if (!bad && this.player && dist(cx, cy, this.player.x, this.player.y) < 250) bad = true;
+      if (!bad) this.closers.push(new Closer(cx, cy));
+    }
+  }
+
+  togglePause() {
+    if (this.state === 'playing') {
+      this.state = 'paused';
+      document.getElementById('pauseScreen').classList.remove('hidden');
+    } else if (this.state === 'paused') {
+      this.state = 'playing';
+      document.getElementById('pauseScreen').classList.add('hidden');
+      this.lastTime = performance.now();
+    }
+  }
+
+  // ===== Interacción al presionar ESPACIO =====
+  tryInteract() {
+    // ¿En qué zona está el jugador?
+    const cx = this.player.x + this.player.w/2;
+    const cy = this.player.y + this.player.h/2;
+    for (const z of this.zones) {
+      if (z.contains(cx, cy)) {
+        this.useZone(z);
+        return;
+      }
+    }
+  }
+
+  useZone(z) {
+    if (z.type === 'beach' || z.type === 'pool') {
+      if (z.recharge.tan)    this.addStat('tan', z.recharge.tan);
+      if (z.recharge.energy) this.addStat('energy', z.recharge.energy);
+      this.popParticle(z, '✨', '#ffd84d');
+    } else if (z.type === 'buffet') {
+      this.addStat('hunger', z.recharge.hunger);
+      if (z.recharge.energy) this.addStat('energy', z.recharge.energy);
+      this.popParticle(z, '✨', '#e67e22');
+    } else if (z.type === 'spa') {
+      this.energy = 100;
+      this.popParticle(z, '✨', '#3498db');
+    } else if (z.type === 'room') {
+      // Dormir: avanza al siguiente día
+      this.sleepInRoom();
+    }
+  }
+
+  addStat(name, delta) {
+    if (name === 'energy') this.energy = clamp(this.energy + delta, 0, 100);
+    if (name === 'hunger') this.hunger = clamp(this.hunger + delta, 0, 100);
+    if (name === 'tan')    this.tan    = clamp(this.tan + delta, 0, 100);
+  }
+
+  popParticle(z, symbol, color) {
+    // 5 partículas en el centro de la zona
+    const cx = z.x + z.w/2, cy = z.y + z.h/2;
+    for (let i = 0; i < 5; i++) {
+      this.particles.push(new Particle(cx + rand(-20,20), cy + rand(-20,20), symbol, color));
+    }
+  }
+
+  sleepInRoom() {
+    if (this.dayNumber >= TOTAL_DAYS) {
+      // Llegó al final del día 7 → victoria
+      this.win();
+      return;
+    }
+    this.dayNumber++;
+    this.dayTimeLeft = DAY_DURATION;
+    this.energy = 100; this.hunger = 100; this.tan = 100;
+    // Re-spawnea closers (puede haber más por el día)
+    this.spawnClosers();
+    // Mover jugador a la salida de la habitación
+    const room = this.zones.find(z => z.type === 'room');
+    this.player.x = room.x + room.w/2 - TILE/2;
+    this.player.y = room.y + room.h - 30;
+    // Partículas
+    this.popParticle(room, '✨', '#fff');
+    // Tooltip de día nuevo
+    this.showTooltip(`💤 Día ${this.dayNumber}/${TOTAL_DAYS}: ¡Bien dormido! Las barras están al 100%.`, 3);
+  }
+
+  // ===== Game over / win =====
+  gameOver(reason) {
+    this.state = 'gameover';
+    document.getElementById('gameOverReason').textContent = reason || "Te fuiste del resort sin disfrutar";
+    document.getElementById('gameOverStats').textContent =
+      `Sobreviviste ${this.dayNumber - 1} días completos. Escapes exitosos: ${this.escapesSuccessful}.`;
+    document.getElementById('gameOverScreen').classList.remove('hidden');
+  }
+  win() {
+    this.state = 'win';
+    const avgTan = this.totalTanSamples > 0 ? Math.round(this.totalTanSum / this.totalTanSamples) : 0;
+    const score = TOTAL_DAYS * 1000 + avgTan * 10 + this.escapesSuccessful * 500;
+    document.getElementById('winStats').textContent =
+      `Días: ${TOTAL_DAYS} · Bronceado promedio: ${avgTan} · Escapes: ${this.escapesSuccessful}\nSCORE FINAL: ${score}`;
+    document.getElementById('winScreen').classList.remove('hidden');
+  }
+
+  // ===== Minijuego de escape =====
+  startEscape(closer) {
+    if (this.player.invulnerable > 0) return; // ignorar durante invulnerabilidad
+    this.state = 'escape';
+    this.activeCloser = closer;
+    this.patience = 100;
+    this.offerIndex = 0;
+    this.offerTimer = 0;
+    this.escapeReleaseTimer = 0;
+    document.getElementById('offerText').textContent = `"${ESCAPE_OFFERS[0]}"`;
+    document.getElementById('patienceLabel').textContent = 'PACIENCIA: 100';
+    document.getElementById('patienceFill').style.width = '100%';
+    document.getElementById('escapeScreen').classList.remove('hidden');
+    // Partícula de "captura" en el mapa
+    this.particles.push(new Particle(this.player.x, this.player.y, '❌', COLORS.red, 1));
+  }
+
+  escapePress() {
+    // El jugador resiste: paciencia +3
+    this.patience = clamp(this.patience + 3, 0, 150);
+    this.updateEscapeUI();
+    if (this.patience >= 150) this.escapeSuccess();
+  }
+
+  escapeFail() {
+    // Paciencia llegó a 0 → pierde 30 de cada barra + 3s de cooldown
+    this.energy = clamp(this.energy - 30, 0, 100);
+    this.hunger = clamp(this.hunger - 30, 0, 100);
+    this.tan    = clamp(this.tan - 30, 0, 100);
+    this.escapeReleaseTimer = 3;
+    this.patience = 30; // recomienza con poca paciencia
+    document.getElementById('offerText').textContent = "💀 ¡Te están desgastando! Aguanta...";
+    this.updateEscapeUI();
+  }
+
+  escapeSuccess() {
+    this.escapesSuccessful++;
+    this.state = 'playing';
+    document.getElementById('escapeScreen').classList.add('hidden');
+    // Aleja al jugador un poco de la closer
+    if (this.activeCloser) {
+      const dx = this.player.x - this.activeCloser.x;
+      const dy = this.player.y - this.activeCloser.y;
+      const l = Math.sqrt(dx*dx + dy*dy) || 1;
+      this.player.x = clamp(this.player.x + (dx/l) * 120, 0, WORLD_W - this.player.w);
+      this.player.y = clamp(this.player.y + (dy/l) * 120, 0, WORLD_H - this.player.h);
+      // Aleja también a la closer
+      this.activeCloser.x = clamp(this.activeCloser.x - (dx/l) * 80, 0, WORLD_W);
+      this.activeCloser.y = clamp(this.activeCloser.y - (dy/l) * 80, 0, WORLD_H);
+    }
+    this.player.invulnerable = 5;
+    this.activeCloser = null;
+    this.lastTime = performance.now();
+    this.showTooltip("¡Escapaste! Tienes 5 segundos de invulnerabilidad.", 2.5);
+  }
+
+  updateEscapeUI() {
+    const pct = clamp(this.patience / 150 * 100, 0, 100);
+    document.getElementById('patienceFill').style.width = pct + '%';
+    document.getElementById('patienceLabel').textContent = `PACIENCIA: ${Math.floor(this.patience)}`;
+  }
+
+  // ===== Tooltip =====
+  showTooltip(text, seconds=3) {
+    this.tooltipEl.textContent = text;
+    this.tooltipEl.classList.remove('hidden');
+    this.tooltipTimer = seconds;
+  }
+
+  // ===== Update principal =====
+  update(dt) {
+    if (this.state === 'playing') {
+      this.player.update(dt);
+      // Tracking de bronceado promedio
+      this.totalTanSum += this.tan;
+      this.totalTanSamples++;
+
+      // Drenaje de stats
+      this.energyTimer += dt;
+      this.hungerTimer += dt;
+      this.tanTimer += dt;
+      if (this.energyTimer >= 3) { this.energy = clamp(this.energy - 1, 0, 100); this.energyTimer = 0; }
+      if (this.hungerTimer >= 4) { this.hunger = clamp(this.hunger - 1, 0, 100); this.hungerTimer = 0; }
+      if (this.tanTimer    >= 5) { this.tan    = clamp(this.tan - 1, 0, 100);    this.tanTimer = 0; }
+
+      // Game over si alguna llega a 0
+      if (this.energy <= 0) return this.gameOver("Te quedaste sin energía. Te fuiste del resort sin disfrutar.");
+      if (this.hunger <= 0) return this.gameOver("Te quedaste sin hambre saciada. Te fuiste del resort sin disfrutar.");
+      if (this.tan <= 0)    return this.gameOver("Llegaste pálido a casa. Te fuiste del resort sin disfrutar.");
+
+      // Tiempo del día
+      this.dayTimeLeft -= dt;
+      if (this.dayTimeLeft <= 0) {
+        // Si no durmió a tiempo, "se le acabó el día" → tiene que ir a la habitación
+        // Drena energía adicional para presionar
+        this.energy = clamp(this.energy - 5, 0, 100);
+        this.dayTimeLeft = 10; // pequeño respiro adicional
+        this.showTooltip("⏰ ¡Tu día se está agotando! Ve a la HABITACIÓN a dormir.", 3);
+      }
+
+      // Update closers
+      const safeZones = this.zones.filter(z => z.safe);
+      for (const c of this.closers) {
+        c.update(dt, this.player, safeZones);
+      }
+
+      // Detección de colisión con closers
+      if (this.player.invulnerable <= 0) {
+        for (const c of this.closers) {
+          if (this.aabb(this.player, c)) {
+            this.startEscape(c);
+            break;
+          }
+        }
+      }
+
+      // Tooltip de zona (mostrar primera vez)
+      const cx = this.player.x + this.player.w/2;
+      const cy = this.player.y + this.player.h/2;
+      for (const z of this.zones) {
+        if (z.contains(cx, cy) && !z.visited) {
+          z.visited = true;
+          this.showTooltip(this.getZoneHelp(z), 4);
+        }
+      }
+    }
+    else if (this.state === 'escape') {
+      // Si está en cooldown post-fallo, no decrementar paciencia
+      if (this.escapeReleaseTimer > 0) {
+        this.escapeReleaseTimer -= dt;
+        if (this.escapeReleaseTimer <= 0) {
+          document.getElementById('offerText').textContent = `"${ESCAPE_OFFERS[this.offerIndex]}"`;
+        }
+      } else {
+        // Paciencia baja 1 punto cada 100ms (= 10 puntos por segundo)
+        this.patience -= 10 * dt;
+        if (this.patience <= 0) {
+          this.escapeFail();
+        }
+        this.updateEscapeUI();
+        // Cambiar oferta cada 2 segundos
+        this.offerTimer += dt;
+        if (this.offerTimer >= 2) {
+          this.offerTimer = 0;
+          this.offerIndex = (this.offerIndex + 1) % ESCAPE_OFFERS.length;
+          document.getElementById('offerText').textContent = `"${ESCAPE_OFFERS[this.offerIndex]}"`;
+        }
+      }
+    }
+
+    // Partículas (siempre se actualizan si hay)
+    this.particles = this.particles.filter(p => { p.update(dt); return p.life > 0; });
+
+    // Tooltip timer
+    if (this.tooltipTimer > 0) {
+      this.tooltipTimer -= dt;
+      if (this.tooltipTimer <= 0) this.tooltipEl.classList.add('hidden');
+    }
+  }
+
+  // AABB rect/rect
+  aabb(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+
+  getZoneHelp(z) {
+    switch (z.type) {
+      case 'beach':  return "🏖️ PLAYA: Tómate sol en los camastros. ESPACIO recarga BRONCEADO (-energía).";
+      case 'pool':   return "🏊 PISCINA: ESPACIO para refrescarte. Recarga BRONCEADO y ENERGÍA.";
+      case 'buffet': return "🍤 BUFFET: ESPACIO para comer. Recarga HAMBRE rápidamente.";
+      case 'spa':    return "💆 SPA: Zona segura sin closers. ESPACIO restaura ENERGÍA al 100%.";
+      case 'room':   return "🛏️ HABITACIÓN: Zona 100% segura. ESPACIO para dormir y avanzar al siguiente día.";
+    }
+    return '';
+  }
+
+  // ===== Render =====
+  render() {
+    const ctx = this.ctx;
+    // Fondo
+    ctx.fillStyle = COLORS.grass;
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+    // Cámara siguiendo al jugador
+    let camX = 0, camY = 0;
+    if (this.player) {
+      camX = clamp(this.player.x - CANVAS_W/2 + this.player.w/2, 0, WORLD_W - CANVAS_W);
+      camY = clamp(this.player.y - CANVAS_H/2 + this.player.h/2, 0, WORLD_H - CANVAS_H);
+    }
+
+    // Patrón de pasto (cuadrícula sutil)
+    ctx.fillStyle = COLORS.grassDark;
+    const gridSize = 80;
+    const startX = Math.floor(camX / gridSize) * gridSize - camX;
+    const startY = Math.floor(camY / gridSize) * gridSize - camY;
+    for (let gx = startX; gx < CANVAS_W; gx += gridSize) {
+      for (let gy = startY; gy < CANVAS_H; gy += gridSize) {
+        if (((gx + gy) / gridSize) % 2 === 0) {
+          ctx.fillRect(gx, gy, gridSize, gridSize);
+        }
+      }
+    }
+
+    // Caminos (líneas conectando zonas a la habitación central)
+    this.drawPaths(ctx, camX, camY);
+
+    // Zonas
+    for (const z of this.zones) z.draw(ctx, camX, camY);
+
+    // Closers (solo si estamos jugando)
+    if (this.player) {
+      for (const c of this.closers) c.draw(ctx, camX, camY);
+      // Jugador
+      this.player.draw(ctx, camX, camY);
+    }
+
+    // Partículas
+    for (const p of this.particles) p.draw(ctx, camX, camY);
+
+    // HUD
+    this.drawHUD(ctx);
+  }
+
+  drawPaths(ctx, camX, camY) {
+    // Camino desde la habitación (centro) a cada zona
+    const room = this.zones.find(z => z.type === 'room');
+    const roomCx = room.x + room.w/2;
+    const roomCy = room.y + room.h/2;
+    ctx.strokeStyle = COLORS.path;
+    ctx.lineWidth = 30;
+    ctx.lineCap = 'round';
+    for (const z of this.zones) {
+      if (z.type === 'room') continue;
+      const zcx = z.x + z.w/2;
+      const zcy = z.y + z.h/2;
+      ctx.beginPath();
+      ctx.moveTo(roomCx - camX, roomCy - camY);
+      ctx.lineTo(zcx - camX, zcy - camY);
+      ctx.stroke();
+    }
+    // Línea más oscura encima para detalle
+    ctx.strokeStyle = COLORS.pathDark;
+    ctx.lineWidth = 4;
+    ctx.setLineDash([6, 10]);
+    for (const z of this.zones) {
+      if (z.type === 'room') continue;
+      const zcx = z.x + z.w/2;
+      const zcy = z.y + z.h/2;
+      ctx.beginPath();
+      ctx.moveTo(roomCx - camX, roomCy - camY);
+      ctx.lineTo(zcx - camX, zcy - camY);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+
+  drawHUD(ctx) {
+    if (!this.player) return;
+    // Fondo del HUD
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillRect(0, 0, CANVAS_W, 60);
+
+    // Barras
+    this.drawBar(ctx, 10, 8, 'ENERGÍA', this.energy, '#3498db');
+    this.drawBar(ctx, 10, 28, 'HAMBRE',  this.hunger, '#e67e22');
+    this.drawBar(ctx, 10, 48, 'BRONCEADO', this.tan,  '#f39c12');
+
+    // Día (arriba derecha)
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Día ${this.dayNumber}/${TOTAL_DAYS}`, CANVAS_W - 12, 22);
+    ctx.font = '12px monospace';
+    ctx.fillText(`Tiempo: ${Math.ceil(this.dayTimeLeft)}s`, CANVAS_W - 12, 40);
+    ctx.fillText(`Escapes: ${this.escapesSuccessful}`, CANVAS_W - 12, 56);
+    ctx.textAlign = 'left';
+
+    // Indicador de invulnerabilidad
+    if (this.player.invulnerable > 0) {
+      ctx.fillStyle = '#2ecc71';
+      ctx.font = 'bold 12px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`✨ INVULNERABLE: ${this.player.invulnerable.toFixed(1)}s`, CANVAS_W/2, 75);
+      ctx.textAlign = 'left';
+    }
+  }
+
+  drawBar(ctx, x, y, label, value, color) {
+    // Label
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText(label, x, y + 11);
+    // Background bar
+    const bx = x + 90, bw = 150, bh = 12;
+    ctx.fillStyle = '#222';
+    ctx.fillRect(bx, y + 1, bw, bh);
+    // Fill
+    ctx.fillStyle = color;
+    ctx.fillRect(bx + 1, y + 2, (bw - 2) * (value/100), bh - 2);
+    // Value text
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText(`${Math.floor(value)}`, bx + bw + 6, y + 11);
+  }
+
+  // ===== Game loop =====
+  loop(now) {
+    const dt = Math.min(0.05, (now - this.lastTime) / 1000); // limitar dt para evitar saltos grandes
+    this.lastTime = now;
+    if (this.state === 'playing' || this.state === 'escape') {
+      this.update(dt);
+    }
+    this.render();
+    requestAnimationFrame((t) => this.loop(t));
+  }
+
+  start() {
+    this.lastTime = performance.now();
+    requestAnimationFrame((t) => this.loop(t));
+  }
+}
+
+// ============================================================
+// Arranque
+// ============================================================
+const game = new Game();
+game.start();
+</script>
+</body>
+</html>
