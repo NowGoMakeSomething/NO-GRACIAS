@@ -77,6 +77,34 @@ const viewports = {
       });
     }
 
+    // Player zoom: clip dinámico centrado en el player (considerando clamp de cámara)
+    if (process.argv[4] === 'playerzoom') {
+      const v = viewports[VIEWPORT];
+      const pos = await page.evaluate(() => {
+        const g = window.game;
+        // Replica del cálculo de cámara en render()
+        const CW = window.innerWidth, CH = window.innerHeight;
+        const camX = Math.max(0, Math.min(2000 - CW, g.player.x - CW/2 + g.player.w/2));
+        const camY = Math.max(0, Math.min(2000 - CH, g.player.y - CH/2 + g.player.h/2));
+        return {
+          sx: g.player.x - camX,
+          sy: g.player.y - camY,
+          CW, CH
+        };
+      });
+      const cx = Math.round(pos.sx);
+      const cy = Math.round(pos.sy);
+      await page.screenshot({
+        path: path.join(outDir, `${PRESET}-${VIEWPORT}-playerzoom.png`),
+        clip: {
+          x: Math.max(0, cx - 60),
+          y: Math.max(0, cy - 60),
+          width: Math.min(180, v.width - Math.max(0, cx - 60)),
+          height: Math.min(180, v.height - Math.max(0, cy - 60))
+        }
+      });
+    }
+
     // Si nos pidieron un cuarto argumento "zoom", spawneamos closer al lado
     // del player y tomamos un screenshot recortado al player
     if (process.argv[4] === 'zoom') {

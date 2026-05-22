@@ -141,19 +141,74 @@
     image-rendering: pixelated;
   }
 
-  /* Tooltip de zona */
+  /* Tooltip de zona — estilo "ventana de Pokémon" */
   #tooltip {
     position: absolute;
-    bottom: 80px; left: 50%;
+    bottom: 100px; left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.85);
-    border: 2px solid #ffd84d;
+    background: linear-gradient(180deg, #1a2330 0%, #0f1620 100%);
+    border: 3px solid #d4a060;
+    box-shadow: 0 0 0 2px #1a1614, 0 6px 16px rgba(0,0,0,0.5);
     color: #fff;
-    padding: 10px 18px;
+    padding: 12px 22px;
     font-size: 14px;
+    font-weight: bold;
     z-index: 5;
-    max-width: 500px;
+    max-width: 540px;
     text-align: center;
+    border-radius: 4px;
+    animation: tooltipBounce 0.3s ease-out;
+  }
+  #tooltip::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(212,160,96,0.5);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  @keyframes tooltipBounce {
+    0% { transform: translateX(-50%) translateY(20px); opacity: 0; }
+    60% { transform: translateX(-50%) translateY(-4px); opacity: 1; }
+    100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+  }
+
+  /* Day transition overlay (fade to dark when sleeping) */
+  #dayTransition {
+    position: absolute; inset: 0;
+    background: #000;
+    color: #ffd84d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-family: 'Courier New', monospace;
+    z-index: 8;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s;
+  }
+  #dayTransition.show { opacity: 1; }
+  #dayTransition .moon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: moonFloat 2s ease-in-out infinite;
+  }
+  @keyframes moonFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  #dayTransition .day-text {
+    font-size: 36px;
+    font-weight: bold;
+    letter-spacing: 6px;
+    text-shadow: 3px 3px 0 #c0392b, 6px 6px 0 #1a1614;
+  }
+  #dayTransition .day-sub {
+    font-size: 14px;
+    color: #fff;
+    margin-top: 12px;
+    opacity: 0.8;
   }
   /* Info de controles abajo */
   .controls-help {
@@ -340,6 +395,13 @@
 
     <!-- Tooltip de zona -->
     <div id="tooltip" class="hidden"></div>
+
+    <!-- Overlay de transición de día (fade to black con "DÍA X") -->
+    <div id="dayTransition">
+      <div class="moon">🌙</div>
+      <div class="day-text" id="dayTransitionText">DÍA 2</div>
+      <div class="day-sub">Buenas noches en el resort...</div>
+    </div>
 
     <!-- Controles táctiles (móvil y mouse) -->
     <div id="touchControls">
@@ -2229,23 +2291,32 @@ class Game {
 
   sleepInRoom() {
     if (this.dayNumber >= TOTAL_DAYS) {
-      // Llegó al final del día 7 → victoria
       this.win();
       return;
     }
-    this.dayNumber++;
-    this.dayTimeLeft = DAY_DURATION;
-    this.energy = 100; this.hunger = 100; this.tan = 100;
-    // Re-spawnea closers (puede haber más por el día)
-    this.spawnClosers();
-    // Mover jugador a la salida de la habitación
-    const room = this.zones.find(z => z.type === 'room');
-    this.player.x = room.x + room.w/2 - TILE/2;
-    this.player.y = room.y + room.h - 30;
-    // Partículas
-    this.popParticle(room, '✨', '#fff');
-    // Tooltip de día nuevo
-    this.showTooltip(`💤 Día ${this.dayNumber}/${TOTAL_DAYS}: ¡Bien dormido! Las barras están al 100%.`, 3);
+    // Transición de día: fade a negro con "DÍA X"
+    const overlay = document.getElementById('dayTransition');
+    const txt = document.getElementById('dayTransitionText');
+    const nextDay = this.dayNumber + 1;
+    if (txt) txt.textContent = `DÍA ${nextDay}`;
+    if (overlay) overlay.classList.add('show');
+
+    // Después de 1.4s, hacer el cambio real y luego desvanecer
+    setTimeout(() => {
+      this.dayNumber = nextDay;
+      this.dayTimeLeft = DAY_DURATION;
+      this.energy = 100; this.hunger = 100; this.tan = 100;
+      this.spawnClosers();
+      const room = this.zones.find(z => z.type === 'room');
+      this.player.x = room.x + room.w/2 - TILE/2;
+      this.player.y = room.y + room.h - 30;
+      this.popParticle(room, '✨', '#fff');
+      this.showTooltip(`☀️ Día ${this.dayNumber}/${TOTAL_DAYS}: ¡Bien dormido! Las barras están al 100%.`, 3);
+      // Fade out de la transición
+      setTimeout(() => {
+        if (overlay) overlay.classList.remove('show');
+      }, 600);
+    }, 1400);
   }
 
   // ===== Game over / win =====
@@ -2710,12 +2781,19 @@ class Game {
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
     }
 
+    // Capa de agua animada: brillitos que se mueven cada frame sobre tiles de agua.
+    // Los dibuja directamente sobre el canvas principal (no en el pre-render).
+    this._drawAnimatedWater(ctx, camX, camY);
+
     // Closers (solo si estamos jugando)
     if (this.player) {
       // Ordenar entidades por Y para depth sorting
       const entities = [...this.closers, this.player];
       entities.sort((a, b) => (a.y + a.h) - (b.y + b.h));
       for (const e of entities) e.draw(ctx, camX, camY);
+
+      // Prompt de interacción "[ESPACIO]" cuando el player está en una zona
+      this._drawInteractPrompt(ctx, camX, camY);
     }
 
     // Partículas (siempre encima de entidades)
@@ -2723,6 +2801,199 @@ class Game {
 
     // HUD
     this.drawHUD(ctx);
+
+    // Minimapa (solo durante gameplay)
+    if (this.state === 'playing' || this.state === 'paused') {
+      this._drawMinimap(ctx);
+    }
+  }
+
+  // Dibuja brillitos animados sobre cualquier tile de agua visible
+  _drawAnimatedWater(ctx, camX, camY) {
+    if (!this.player) return;
+    const t = performance.now() / 1000;
+    // Áreas con agua: piscina interna, mar de la playa
+    const pool = this.zones.find(z => z.type === 'pool');
+    const beach = this.zones.find(z => z.type === 'beach');
+    const fountain = this.zones.find(z => z.type === 'spa');
+    const waterAreas = [];
+    if (pool) waterAreas.push({
+      x: pool.x + 50 - 4, y: pool.y + 60 - 4,
+      w: pool.w - 100 + 8, h: pool.h - 120 + 8
+    });
+    if (beach) waterAreas.push({
+      x: beach.x, y: beach.y + beach.h - 80,
+      w: beach.w, h: 80
+    });
+    // Brillitos para fuente del spa
+    if (fountain) {
+      const fcx = fountain.x + fountain.w/2;
+      const fcy = fountain.y + fountain.h/2;
+      ctx.fillStyle = COLORS.waterShine;
+      const sparkX = fcx + Math.cos(t * 2) * 15;
+      const sparkY = fcy + Math.sin(t * 2.4) * 12;
+      ctx.fillRect(sparkX - camX, sparkY - camY, 2, 2);
+      ctx.fillRect(sparkX - camX + 1, sparkY - camY + 1, 1, 1);
+    }
+
+    ctx.fillStyle = COLORS.waterShine;
+    for (const area of waterAreas) {
+      // 5 sparkles moviéndose
+      for (let i = 0; i < 6; i++) {
+        const phase = i * 1.7 + t * 0.6;
+        const sx = area.x + ((Math.sin(phase) + 1) * 0.5) * area.w;
+        const sy = area.y + ((Math.cos(phase * 0.7) + 1) * 0.5) * area.h;
+        const fx = Math.round(sx - camX);
+        const fy = Math.round(sy - camY);
+        if (fx < 0 || fx > CANVAS_W || fy < 0 || fy > CANVAS_H) continue;
+        // Flash on/off
+        if ((Math.sin(t * 4 + i) + 1) > 0.7) {
+          ctx.fillRect(fx, fy, 3, 1);
+          ctx.fillRect(fx + 1, fy + 1, 1, 1);
+        }
+      }
+    }
+  }
+
+  // Prompt flotante "[ESPACIO]" sobre el player cuando está en una zona interactuable
+  _drawInteractPrompt(ctx, camX, camY) {
+    if (this.state !== 'playing') return;
+    const cx = this.player.x + this.player.w/2;
+    const cy = this.player.y + this.player.h/2;
+    let inZone = null;
+    for (const z of this.zones) {
+      if (z.contains(cx, cy)) { inZone = z; break; }
+    }
+    if (!inZone) return;
+    const px = Math.round(this.player.x - camX) + this.player.w/2;
+    const py = Math.round(this.player.y - camY) - 10;
+    // Bobbing vertical
+    const bob = Math.sin(performance.now() / 200) * 2;
+
+    // Etiqueta diferente según tipo
+    let label = '[ESPACIO]';
+    if (inZone.type === 'beach')  label = '☀️ TOMAR SOL';
+    if (inZone.type === 'pool')   label = '🏊 NADAR';
+    if (inZone.type === 'buffet') label = '🍤 COMER';
+    if (inZone.type === 'spa')    label = '💆 RELAJARSE';
+    if (inZone.type === 'room')   label = '💤 DORMIR';
+
+    ctx.font = 'bold 11px monospace';
+    const tw = ctx.measureText(label).width;
+    const bx = px - tw/2 - 6;
+    const by = py - 16 + bob;
+    // Sombra
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(bx + 2, by + 2, tw + 12, 18);
+    // Fondo amarillo
+    ctx.fillStyle = COLORS.yellow;
+    ctx.fillRect(bx, by, tw + 12, 18);
+    // Bordes
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.fillRect(bx, by, tw + 12, 1);
+    ctx.fillRect(bx, by + 17, tw + 12, 1);
+    ctx.fillRect(bx, by, 1, 18);
+    ctx.fillRect(bx + tw + 11, by, 1, 18);
+    // Pico
+    ctx.beginPath();
+    ctx.moveTo(px - 4, by + 18);
+    ctx.lineTo(px, by + 24);
+    ctx.lineTo(px + 4, by + 18);
+    ctx.closePath();
+    ctx.fillStyle = COLORS.yellow;
+    ctx.fill();
+    // Texto
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.fillText(label, bx + 6, by + 13);
+  }
+
+  // Minimapa: zonas como cuadrados de color, player como punto verde,
+  // closers como puntos rojos. En la esquina superior derecha bajo el panel.
+  _drawMinimap(ctx) {
+    const mapSize = 130;
+    const mapX = CANVAS_W - mapSize - 12;
+    const mapY = 96; // debajo del panel derecho
+    const scale = mapSize / WORLD_W;
+
+    // Panel de fondo
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(mapX - 2, mapY - 2, mapSize + 4, mapSize + 4);
+    ctx.fillStyle = '#d4a060';
+    ctx.fillRect(mapX - 1, mapY - 1, mapSize + 2, mapSize + 2);
+    // Fondo del mapa (verde tenue)
+    ctx.fillStyle = COLORS.grass;
+    ctx.fillRect(mapX, mapY, mapSize, mapSize);
+    // Tile más oscuro alternado
+    ctx.fillStyle = COLORS.grassMid;
+    for (let yy = 0; yy < mapSize; yy += 10) {
+      for (let xx = (yy/10)%2*10; xx < mapSize; xx += 20) {
+        ctx.fillRect(mapX + xx, mapY + yy, 10, 10);
+      }
+    }
+
+    // Caminos (líneas tenues)
+    const room = this.zones.find(z => z.type === 'room');
+    const rcx = mapX + (room.x + room.w/2) * scale;
+    const rcy = mapY + (room.y + room.h/2) * scale;
+    ctx.strokeStyle = COLORS.path;
+    ctx.lineWidth = 4;
+    for (const z of this.zones) {
+      if (z.type === 'room') continue;
+      const zcx = mapX + (z.x + z.w/2) * scale;
+      const zcy = mapY + (z.y + z.h/2) * scale;
+      ctx.beginPath();
+      ctx.moveTo(rcx, rcy);
+      ctx.lineTo(zcx, zcy);
+      ctx.stroke();
+    }
+
+    // Zonas (cuadrados de colores)
+    const zoneColors = {
+      beach:  COLORS.sand,
+      pool:   COLORS.water,
+      buffet: COLORS.buffetFloor,
+      spa:    COLORS.spaFloor,
+      room:   COLORS.roomFloor
+    };
+    for (const z of this.zones) {
+      const sx = mapX + z.x * scale;
+      const sy = mapY + z.y * scale;
+      const sw = z.w * scale;
+      const sh = z.h * scale;
+      ctx.fillStyle = zoneColors[z.type];
+      ctx.fillRect(sx, sy, sw, sh);
+      ctx.strokeStyle = COLORS.pOutline;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(sx + 0.5, sy + 0.5, sw - 1, sh - 1);
+    }
+
+    // Closers (puntos rojos parpadeantes)
+    const blink = Math.floor(performance.now() / 250) % 2 === 0;
+    if (blink) {
+      ctx.fillStyle = COLORS.red;
+      for (const c of this.closers) {
+        const sx = mapX + c.x * scale;
+        const sy = mapY + c.y * scale;
+        ctx.fillRect(sx - 1.5, sy - 1.5, 3, 3);
+      }
+    }
+
+    // Player (punto verde)
+    if (this.player) {
+      const sx = mapX + this.player.x * scale;
+      const sy = mapY + this.player.y * scale;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(sx - 3, sy - 3, 6, 6);
+      ctx.fillStyle = COLORS.green;
+      ctx.fillRect(sx - 2, sy - 2, 4, 4);
+    }
+
+    // Label
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('MAPA', mapX + mapSize - 4, mapY - 6);
+    ctx.textAlign = 'left';
   }
 
   // ===== HUD profesional (estilo GBA Zelda / Pokemon) =====
