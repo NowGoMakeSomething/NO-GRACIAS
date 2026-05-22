@@ -23,75 +23,98 @@
     flex-direction: column;
   }
   /* Contenedor del canvas, con overlays encima */
+  /* Stage y canvas ocupan toda la pantalla. El canvas se redimensiona
+     dinámicamente en JS para que coincida con el viewport y no haya
+     barras negras ni distorsión. */
   #stage {
     position: relative;
-    width: 800px; height: 600px;
+    width: 100%; height: 100%;
     background: #000;
-    box-shadow: 0 0 40px rgba(0,0,0,0.7);
-    /* Escala uniforme para encajar en pantallas pequeñas */
-    transform-origin: center center;
+    overflow: hidden;
   }
   canvas {
     display: block;
-    width: 800px; height: 600px;
+    width: 100%; height: 100%;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
   }
-  /* Responsive: en móvil/pantalla pequeña, escalar el stage entero
-     manteniendo el ratio interno (800x600) */
-  @media (max-width: 820px), (max-height: 620px) {
-    #wrapper { padding: 0; }
-    #stage {
-      width: 100vw;
-      height: calc(100vw * 0.75); /* 600/800 = 0.75 */
-      max-height: 100vh;
-      max-width: calc(100vh / 0.75);
-    }
-    canvas {
-      width: 100%;
-      height: 100%;
-    }
-  }
-  /* Overlays (menu, pausa, victoria, etc.) */
+  /* Overlays (menu, pausa, victoria, etc.) — estilo "ventana de menú" */
   .overlay {
     position: absolute; inset: 0;
     display: flex; justify-content: center; align-items: center;
     flex-direction: column;
-    background: rgba(0,0,0,0.75);
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.9) 100%);
     color: #fff;
     text-align: center;
     padding: 20px;
     z-index: 10;
   }
+  .overlay-card {
+    background: linear-gradient(180deg, #1a2330 0%, #0f1620 100%);
+    border: 4px solid #d4a060;
+    box-shadow: 0 0 0 2px #1a1614, 0 0 40px rgba(212,160,96,0.4), 0 12px 30px rgba(0,0,0,0.6);
+    padding: 28px 36px;
+    max-width: 580px;
+    width: 100%;
+    border-radius: 6px;
+    position: relative;
+  }
+  .overlay-card::before {
+    /* Esquinas decorativas tipo ornamento */
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(212,160,96,0.5);
+    border-radius: 3px;
+    pointer-events: none;
+  }
   .hidden { display: none !important; }
   h1 {
-    font-size: 48px;
+    font-size: 56px;
     color: #ffd84d;
-    text-shadow: 4px 4px 0 #c0392b;
+    text-shadow: 4px 4px 0 #c0392b, 8px 8px 0 #1a1614;
     margin-bottom: 10px;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
+    line-height: 1.1;
   }
   h2 {
-    font-size: 24px;
-    color: #1abc9c;
-    margin-bottom: 30px;
+    font-size: 22px;
+    color: #5fb2d4;
+    margin-bottom: 24px;
+    letter-spacing: 1px;
   }
-  p { font-size: 16px; line-height: 1.6; margin-bottom: 12px; max-width: 600px; }
+  p { font-size: 15px; line-height: 1.65; margin-bottom: 12px; }
   button {
-    margin-top: 20px;
-    padding: 14px 28px;
+    margin-top: 18px;
+    padding: 14px 36px;
     font-family: 'Courier New', monospace;
     font-size: 18px;
     font-weight: bold;
-    background: #ffd84d;
-    color: #2c3e50;
-    border: 4px solid #2c3e50;
+    background: linear-gradient(180deg, #ffd84d 0%, #d4a020 100%);
+    color: #2c1a08;
+    border: 3px solid #1a1614;
+    box-shadow: 0 4px 0 #1a1614, inset 0 1px 0 rgba(255,255,255,0.4);
     cursor: pointer;
-    letter-spacing: 1px;
-    transition: transform 0.1s;
+    letter-spacing: 2px;
+    transition: transform 0.08s, box-shadow 0.08s;
+    text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
   }
-  button:hover { transform: scale(1.05); background: #ffe680; }
-  button:active { transform: scale(0.95); }
+  button:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #1a1614, inset 0 1px 0 rgba(255,255,255,0.5); }
+  button:active { transform: translateY(2px); box-shadow: 0 2px 0 #1a1614, inset 0 1px 0 rgba(255,255,255,0.3); }
+  .game-tag {
+    display: inline-block;
+    background: rgba(231,76,60,0.85);
+    color: #fff;
+    padding: 3px 10px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    border: 1px solid rgba(255,255,255,0.4);
+    margin-bottom: 12px;
+  }
+  .highlight-yellow { color: #ffd84d; font-weight: bold; }
+  .highlight-cyan { color: #5fb2d4; font-weight: bold; }
+  .highlight-orange { color: #e67e22; font-weight: bold; }
+  .highlight-red { color: #e74c3c; font-weight: bold; }
   /* Botón gigante del minijuego de escape */
   #escapeBtn {
     margin-top: 24px;
@@ -108,6 +131,16 @@
     from { transform: scale(1); }
     to { transform: scale(1.05); }
   }
+  /* Canvas dentro del escape card */
+  #escapeArtCanvas {
+    display: block;
+    margin: 8px auto 12px;
+    width: 180px; height: 160px;
+    border: 3px solid #d4a060;
+    box-shadow: 0 0 0 2px #1a1614, inset 0 0 20px rgba(0,0,0,0.5);
+    image-rendering: pixelated;
+  }
+
   /* Tooltip de zona */
   #tooltip {
     position: absolute;
@@ -167,7 +200,11 @@
     position: absolute; inset: 0;
     pointer-events: none;
     z-index: 4;
+    transition: opacity 0.2s;
   }
+  /* Ocultar controles cuando no estamos en gameplay */
+  #touchControls.hidden-controls { opacity: 0; pointer-events: none; }
+  #touchControls.hidden-controls > * { pointer-events: none; }
   #joystickBase {
     position: absolute;
     left: 20px; bottom: 20px;
@@ -234,53 +271,71 @@
 
     <!-- Pantalla de inicio -->
     <div id="startScreen" class="overlay">
-      <h1>RESORT ESCAPE</h1>
-      <h2>All-Inclusive Survival</h2>
-      <p>Eres un turista en la Riviera Maya. Sobrevive <b>7 días</b> en el resort manteniendo tus barras llenas
-         mientras evitas a las <b style="color:#ffd84d">CLOSERS DE TIMESHARE</b>.</p>
-      <p>Recarga <b style="color:#f39c12">Bronceado</b> en la playa/piscina, <b style="color:#e67e22">Hambre</b> en el buffet,
-         <b style="color:#3498db">Energía</b> en el spa. Duerme en tu habitación para avanzar al siguiente día.</p>
-      <p><i>Recuerda: di NO, GRACIAS.</i></p>
-      <button id="startBtn">EMPEZAR VACACIONES</button>
-      <div class="controls-help">
-        🖥️ WASD / Flechas: mover &nbsp;·&nbsp; ESPACIO: interactuar / decir NO &nbsp;·&nbsp; ESC: pausa<br>
-        📱 Móvil: joystick virtual (abajo izq) &nbsp;·&nbsp; botón rojo: NO, GRACIAS / interactuar &nbsp;·&nbsp; II: pausa
+      <div class="overlay-card">
+        <span class="game-tag">SÁTIRA MARKETERA</span>
+        <h1>RESORT<br>ESCAPE</h1>
+        <h2>NO GRACIAS · All-Inclusive Survival</h2>
+        <p>Eres un turista en la <span class="highlight-cyan">Riviera Maya</span>. Sobrevive
+           <span class="highlight-yellow">7 días</span> en el resort manteniendo tus barras llenas
+           mientras evitas a las <span class="highlight-yellow">CLOSERS DE TIMESHARE</span>.</p>
+        <p>Recarga <span class="highlight-yellow">☀️ Bronceado</span> en la playa/piscina,
+           <span class="highlight-orange">🍗 Hambre</span> en el buffet,
+           <span class="highlight-cyan">⚡ Energía</span> en el spa.<br>
+           Duerme en tu habitación para avanzar al siguiente día.</p>
+        <p><i style="color:#aaa">— Recuerda: di NO, GRACIAS. —</i></p>
+        <button id="startBtn">EMPEZAR VACACIONES</button>
+        <div class="controls-help">
+          🖥️ WASD / Flechas: mover &nbsp;·&nbsp; ESPACIO: interactuar / decir NO &nbsp;·&nbsp; ESC: pausa<br>
+          📱 Móvil: joystick (abajo izq) &nbsp;·&nbsp; botón rojo: NO, GRACIAS / interactuar &nbsp;·&nbsp; II: pausa
+        </div>
       </div>
     </div>
 
     <!-- Pantalla de pausa -->
     <div id="pauseScreen" class="overlay hidden">
-      <h1>PAUSA</h1>
-      <p>Presiona ESC para continuar.</p>
+      <div class="overlay-card">
+        <h1>PAUSA</h1>
+        <p>Presiona <span class="highlight-yellow">ESC</span> o el botón <b>II</b> para continuar.</p>
+      </div>
     </div>
 
     <!-- Pantalla de minijuego de escape -->
     <div id="escapeScreen" class="overlay hidden">
-      <div class="closer-art">👱‍♀️📋</div>
-      <h2 style="color:#ffd84d">¡Te agarró una closer!</h2>
-      <div id="offerText">"¿Tienen 90 minutitos?"</div>
-      <div id="patienceBar">
-        <div id="patienceFill"></div>
-        <div id="patienceLabel">PACIENCIA: 100</div>
+      <div class="overlay-card escape-card">
+        <span class="game-tag" style="background:rgba(231,76,60,0.95)">SALA DE VENTAS</span>
+        <h2 style="color:#ffd84d; margin-bottom:6px">¡Te agarró una closer!</h2>
+        <!-- Canvas pequeño para dibujar la closer en pixel art -->
+        <canvas id="escapeArtCanvas" width="180" height="160"></canvas>
+        <div id="offerText">"¿Tienen 90 minutitos?"</div>
+        <div id="patienceBar">
+          <div id="patienceFill"></div>
+          <div id="patienceLabel">PACIENCIA: 100</div>
+        </div>
+        <button id="escapeBtn">NO, GRACIAS</button>
+        <div class="controls-help">ESPACIO o CLICK rápido para resistir &nbsp;·&nbsp; Llega a 150 para escapar.</div>
       </div>
-      <button id="escapeBtn">NO, GRACIAS</button>
-      <div class="controls-help">ESPACIO o CLICK para resistir. Llega a 150 para escapar.</div>
     </div>
 
     <!-- Pantalla de game over -->
     <div id="gameOverScreen" class="overlay hidden">
-      <h1 style="color:#e74c3c">GAME OVER</h1>
-      <h2 id="gameOverReason">Te fuiste del resort sin disfrutar</h2>
-      <p id="gameOverStats"></p>
-      <button id="retryBtn">Jugar de nuevo</button>
+      <div class="overlay-card">
+        <span class="game-tag" style="background:rgba(231,76,60,0.9)">DERROTA</span>
+        <h1 style="color:#e74c3c; text-shadow: 4px 4px 0 #5a1a10, 8px 8px 0 #1a1614;">GAME OVER</h1>
+        <h2 id="gameOverReason" style="color:#e74c3c">Te fuiste del resort sin disfrutar</h2>
+        <p id="gameOverStats"></p>
+        <button id="retryBtn">VOLVER A VACACIONAR</button>
+      </div>
     </div>
 
     <!-- Pantalla de victoria -->
     <div id="winScreen" class="overlay hidden">
-      <h1 style="color:#2ecc71">¡SOBREVIVISTE!</h1>
-      <h2>Te vas con la dignidad intacta y sin cuotas anuales de mantenimiento</h2>
-      <p id="winStats"></p>
-      <button id="playAgainBtn">Jugar de nuevo</button>
+      <div class="overlay-card">
+        <span class="game-tag" style="background:rgba(46,204,113,0.95)">VICTORIA</span>
+        <h1 style="color:#2ecc71; text-shadow: 4px 4px 0 #1a6a40, 8px 8px 0 #1a1614;">¡SOBREVIVISTE!</h1>
+        <h2 style="color:#2ecc71">Te vas con la dignidad intacta y sin cuotas anuales de mantenimiento</h2>
+        <p id="winStats" style="font-size:17px; color:#ffd84d; font-weight:bold; white-space:pre-line"></p>
+        <button id="playAgainBtn">JUGAR DE NUEVO</button>
+      </div>
     </div>
 
     <!-- Tooltip de zona -->
@@ -304,40 +359,93 @@
    ============================================================ */
 
 // === Constantes globales ===
-const CANVAS_W = 800;
-const CANVAS_H = 600;
+// CANVAS_W/H se actualizan dinámicamente en resizeCanvas() para usar todo el viewport.
+let CANVAS_W = 800;
+let CANVAS_H = 600;
 const WORLD_W = 2000;
 const WORLD_H = 2000;
 const TILE = 24;          // tamaño base de sprites
 const DAY_DURATION = 90;  // segundos por día
 const TOTAL_DAYS = 7;
 
-// Paleta de colores tropicales
+// Paleta tropical (estilo Zelda LTTP / Link's Awakening + Pokémon).
+// Cada elemento tiene 3-4 tonos para sombreado.
 const COLORS = {
-  grass: '#3fa34d',
-  grassDark: '#2e8b3a',
-  sand: '#f4d77a',
-  sandDark: '#d4b860',
-  water: '#3ec4d9',
-  waterDark: '#2a9eb0',
-  path: '#c9a875',
-  pathDark: '#a88b5e',
-  spaFloor: '#e8d5b7',
-  buffetFloor: '#c97c5d',
-  roomFloor: '#8e6c8a',
+  // Pasto (varios tonos para textura)
+  grassLight:  '#7fc955',
+  grass:       '#5fb24d',
+  grassMid:    '#4a9c3a',
+  grassDark:   '#37822a',
+  grassShadow: '#246318',
+  // Árboles
+  treeTrunkDark:  '#4a2a14',
+  treeTrunk:      '#6b3e1f',
+  treeTrunkLight: '#8a5a32',
+  canopyOutline:  '#1f4f12',
+  canopyDark:     '#2e6a1c',
+  canopyMid:      '#42932a',
+  canopyLight:    '#5fb24d',
+  canopyShine:    '#a8e578',
+  // Arena
+  sandLight: '#f7e3a3',
+  sand:      '#ecd07c',
+  sandMid:   '#d8b657',
+  sandDark:  '#a98438',
+  // Agua
+  waterShine: '#bef0fa',
+  waterLight: '#7adceb',
+  water:      '#3ec4d9',
+  waterMid:   '#2a9eb0',
+  waterDark:  '#1e7888',
+  // Caminos / tierra
+  pathLight: '#dab985',
+  path:      '#c19c64',
+  pathMid:   '#a47e4c',
+  pathDark:  '#7a5a36',
+  // Pisos de zonas
+  spaFloor:      '#f0e3c8',
+  spaFloorMid:   '#d6c099',
+  spaFloorDark:  '#a48865',
+  buffetFloor:     '#d4946b',
+  buffetFloorMid:  '#a86c42',
+  buffetFloorDark: '#704428',
+  roomFloor:     '#a08aa0',
+  roomFloorMid:  '#7c637c',
+  roomFloorDark: '#5a4a5a',
+  // Player (Link tropical)
+  pOutline: '#1a1614',
+  pHatDark:  '#1a5a28',
+  pHat:      '#2e8f3e',
+  pHatLight: '#56c469',
+  pHair:     '#5c3317',
+  pSkin:     '#f3c5a3',
+  pSkinShadow: '#c79a76',
+  pShirt:      '#ffffff',
+  pShirtShadow:'#bfbfbf',
+  pShorts:     '#c0392b',
+  pShortsShadow:'#7d2418',
+  pShoes:      '#3d2818',
+  // Closer
+  cOutline:   '#1a1614',
+  cHairLight: '#fff0a0',
+  cHair:      '#ffd84d',
+  cHairDark:  '#c99c20',
+  cSkin:      '#f6d3a8',
+  cSkinShadow:'#cda47a',
+  cLipstick:  '#d63384',
+  cDress:     '#1abc9c',
+  cDressShadow: '#0f7c66',
+  cDressShine:  '#4dd9b6',
+  cBoard:     '#e3c89a',
+  cBoardEdge: '#946b3a',
+  // Otros
   white: '#ffffff',
   red: '#e74c3c',
-  green: '#27ae60',
   yellow: '#ffd84d',
   blue: '#3498db',
-  closerHair: '#f7dc6f',
-  closerDress: '#1abc9c',
-  closerSkin: '#fad7a0',
-  playerHat: '#27ae60',
-  playerSkin: '#fad7a0',
-  playerShirt: '#ffffff',
-  playerShorts: '#e74c3c',
-  shadow: 'rgba(0,0,0,0.25)'
+  orange: '#e67e22',
+  shadow: 'rgba(0,0,0,0.25)',
+  shadowDark: 'rgba(0,0,0,0.4)'
 };
 
 // Frases reales de closers (para el detect)
@@ -406,106 +514,779 @@ function pixelRect(ctx, x, y, w, h, fill, stroke=null) {
   }
 }
 
+// PRNG seedable (Mulberry32) para que la decoración del mundo sea
+// consistente entre frames pero varíe entre partidas si quisiéramos.
+function mulberry32(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 // ============================================================
-// Clase Zone: zonas del mapa (playa, piscina, buffet, spa, habitación)
+// TILES DE TERRENO (16x16 px) — se dibujan en el offscreen del mundo
+// ============================================================
+
+// Pasto detallado: base + tufts darker/lighter + flores ocasionales
+function drawGrassTile(ctx, x, y, rng) {
+  // Base alterna entre dos tonos para textura sutil
+  const baseLight = (Math.floor(x/16) + Math.floor(y/16)) % 2 === 0;
+  ctx.fillStyle = baseLight ? COLORS.grass : COLORS.grassMid;
+  ctx.fillRect(x, y, 16, 16);
+
+  // Algunos píxeles de tono más oscuro (sombras de hojas)
+  ctx.fillStyle = COLORS.grassDark;
+  for (let i = 0; i < 4; i++) {
+    const px = x + Math.floor(rng() * 16);
+    const py = y + Math.floor(rng() * 16);
+    ctx.fillRect(px, py, 1, 1);
+  }
+
+  // Tufts de pasto (forma de "V" pequeña) en ~30% de los tiles
+  const r = rng();
+  if (r < 0.3) {
+    ctx.fillStyle = COLORS.grassDark;
+    const tx = x + 3 + Math.floor(rng() * 10);
+    const ty = y + 4 + Math.floor(rng() * 8);
+    ctx.fillRect(tx, ty + 2, 1, 1);
+    ctx.fillRect(tx + 1, ty + 1, 1, 1);
+    ctx.fillRect(tx + 2, ty + 2, 1, 1);
+    ctx.fillStyle = COLORS.grassLight;
+    ctx.fillRect(tx + 1, ty, 1, 1);
+  } else if (r < 0.36) {
+    // Flor roja
+    const fx = x + 4 + Math.floor(rng() * 8);
+    const fy = y + 4 + Math.floor(rng() * 8);
+    ctx.fillStyle = COLORS.red;
+    ctx.fillRect(fx, fy, 2, 2);
+    ctx.fillStyle = COLORS.yellow;
+    ctx.fillRect(fx, fy, 1, 1);
+  } else if (r < 0.4) {
+    // Flor blanca/amarilla
+    const fx = x + 4 + Math.floor(rng() * 8);
+    const fy = y + 4 + Math.floor(rng() * 8);
+    ctx.fillStyle = COLORS.white;
+    ctx.fillRect(fx, fy, 2, 2);
+    ctx.fillStyle = COLORS.yellow;
+    ctx.fillRect(fx + 1, fy + 1, 1, 1);
+  }
+}
+
+// Arena texturizada (playa)
+function drawSandTile(ctx, x, y, rng) {
+  ctx.fillStyle = COLORS.sand;
+  ctx.fillRect(x, y, 16, 16);
+  // Highlights
+  ctx.fillStyle = COLORS.sandLight;
+  for (let i = 0; i < 4; i++) {
+    ctx.fillRect(x + Math.floor(rng() * 16), y + Math.floor(rng() * 16), 1, 1);
+  }
+  // Granos oscuros
+  ctx.fillStyle = COLORS.sandMid;
+  for (let i = 0; i < 5; i++) {
+    ctx.fillRect(x + Math.floor(rng() * 16), y + Math.floor(rng() * 16), 1, 1);
+  }
+  // Concha ocasional
+  if (rng() < 0.04) {
+    const sx = x + 4 + Math.floor(rng() * 8);
+    const sy = y + 5 + Math.floor(rng() * 6);
+    ctx.fillStyle = COLORS.white;
+    ctx.fillRect(sx, sy, 3, 2);
+    ctx.fillStyle = '#e8d4a0';
+    ctx.fillRect(sx, sy + 1, 3, 1);
+    ctx.fillStyle = COLORS.sandDark;
+    ctx.fillRect(sx + 1, sy, 1, 1);
+  }
+}
+
+// Agua animada (variantes por tile + por frame opcional)
+function drawWaterTile(ctx, x, y, rng) {
+  ctx.fillStyle = COLORS.water;
+  ctx.fillRect(x, y, 16, 16);
+  // Banda más oscura abajo
+  ctx.fillStyle = COLORS.waterMid;
+  ctx.fillRect(x, y + 12, 16, 4);
+  // Highlights / olas
+  ctx.fillStyle = COLORS.waterLight;
+  const r = rng();
+  if (r < 0.5) {
+    ctx.fillRect(x + 2, y + 4, 5, 1);
+    ctx.fillRect(x + 9, y + 8, 3, 1);
+  } else {
+    ctx.fillRect(x + 5, y + 6, 4, 1);
+    ctx.fillRect(x + 10, y + 11, 3, 1);
+  }
+  // Brillo blanco
+  if (rng() < 0.3) {
+    ctx.fillStyle = COLORS.waterShine;
+    ctx.fillRect(x + 3, y + 2, 2, 1);
+  }
+}
+
+// Camino de tierra con piedritas
+function drawPathTile(ctx, x, y, rng) {
+  ctx.fillStyle = COLORS.path;
+  ctx.fillRect(x, y, 16, 16);
+  // Texturilla
+  ctx.fillStyle = COLORS.pathMid;
+  for (let i = 0; i < 6; i++) {
+    ctx.fillRect(x + Math.floor(rng() * 16), y + Math.floor(rng() * 16), 1, 1);
+  }
+  // Piedras 2x2 ocasionales
+  if (rng() < 0.25) {
+    const sx = x + 2 + Math.floor(rng() * 11);
+    const sy = y + 2 + Math.floor(rng() * 11);
+    ctx.fillStyle = COLORS.pathDark;
+    ctx.fillRect(sx, sy, 2, 2);
+    ctx.fillStyle = COLORS.pathLight;
+    ctx.fillRect(sx, sy, 1, 1);
+  }
+  // Pequeño highlight
+  ctx.fillStyle = COLORS.pathLight;
+  ctx.fillRect(x + Math.floor(rng() * 16), y + Math.floor(rng() * 16), 1, 1);
+}
+
+// ============================================================
+// SPRITES DE DECORACIÓN
+// ============================================================
+
+// Árbol redondeado estilo Zelda (32x44, base en x..x+32, y..y+44)
+function drawTree(ctx, x, y) {
+  // Sombra en el suelo
+  ctx.fillStyle = COLORS.shadow;
+  ctx.beginPath();
+  ctx.ellipse(x + 16, y + 42, 14, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Tronco
+  ctx.fillStyle = COLORS.treeTrunkDark;
+  ctx.fillRect(x + 12, y + 28, 8, 14);
+  ctx.fillStyle = COLORS.treeTrunk;
+  ctx.fillRect(x + 13, y + 28, 6, 14);
+  ctx.fillStyle = COLORS.treeTrunkLight;
+  ctx.fillRect(x + 14, y + 30, 1, 9);
+  // Líneas de corteza
+  ctx.fillStyle = COLORS.treeTrunkDark;
+  ctx.fillRect(x + 16, y + 32, 1, 5);
+  ctx.fillRect(x + 17, y + 35, 1, 4);
+
+  // Canopy: dibujamos varios "círculos" de píxeles
+  // Capa más oscura (base + outline)
+  ctx.fillStyle = COLORS.canopyOutline;
+  // Pseudo-círculo grande
+  const circle = (cx, cy, r, color) => {
+    ctx.fillStyle = color;
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        if (dx*dx + dy*dy <= r*r) {
+          ctx.fillRect(cx + dx, cy + dy, 1, 1);
+        }
+      }
+    }
+  };
+  // Sombra
+  circle(x + 16, y + 18, 14, COLORS.canopyOutline);
+  // Verde oscuro
+  circle(x + 16, y + 17, 12, COLORS.canopyDark);
+  // Verde medio
+  circle(x + 16, y + 16, 10, COLORS.canopyMid);
+  // Verde claro
+  circle(x + 14, y + 14, 7, COLORS.canopyLight);
+  // Brillo
+  circle(x + 12, y + 11, 3, COLORS.canopyShine);
+}
+
+// Palmera para playa (44x52)
+function drawPalmTree(ctx, x, y) {
+  // Sombra
+  ctx.fillStyle = COLORS.shadow;
+  ctx.beginPath();
+  ctx.ellipse(x + 22, y + 50, 13, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Tronco curvado
+  ctx.fillStyle = COLORS.treeTrunkDark;
+  ctx.fillRect(x + 20, y + 24, 6, 28);
+  ctx.fillStyle = COLORS.treeTrunk;
+  ctx.fillRect(x + 21, y + 24, 4, 28);
+  // Anillos del tronco
+  ctx.fillStyle = COLORS.treeTrunkDark;
+  for (let i = 0; i < 5; i++) {
+    ctx.fillRect(x + 20, y + 28 + i * 5, 6, 1);
+  }
+  // Cocos
+  ctx.fillStyle = '#4a2a14';
+  ctx.fillRect(x + 16, y + 22, 4, 4);
+  ctx.fillRect(x + 26, y + 22, 4, 4);
+  ctx.fillStyle = '#6b3e1f';
+  ctx.fillRect(x + 16, y + 22, 2, 2);
+  ctx.fillRect(x + 26, y + 22, 2, 2);
+
+  // Hojas: triángulos radiando desde la copa
+  const frondColors = [COLORS.canopyDark, COLORS.canopyMid, COLORS.canopyLight];
+  const drawFrond = (px, py, dx, dy, len) => {
+    for (let i = 0; i < len; i++) {
+      const t = i / len;
+      const c = frondColors[Math.floor(t * frondColors.length)];
+      ctx.fillStyle = c;
+      const fx = px + Math.round(dx * i);
+      const fy = py + Math.round(dy * i);
+      ctx.fillRect(fx, fy, 3, 3);
+    }
+  };
+  // 6 frondas
+  drawFrond(x + 20, y + 18, -1.5, 0.2, 8);   // izq
+  drawFrond(x + 22, y + 18,  1.5, 0.2, 8);   // der
+  drawFrond(x + 22, y + 20, -1.2, 0.8, 7);   // diag izq-abajo
+  drawFrond(x + 22, y + 20,  1.2, 0.8, 7);   // diag der-abajo
+  drawFrond(x + 21, y + 18, -0.6, -1.2, 7);  // diag izq-arriba
+  drawFrond(x + 21, y + 18,  0.6, -1.2, 7);  // diag der-arriba
+
+  // Centro de la copa (más claro)
+  ctx.fillStyle = COLORS.canopyLight;
+  ctx.fillRect(x + 18, y + 16, 8, 4);
+  ctx.fillStyle = COLORS.canopyShine;
+  ctx.fillRect(x + 20, y + 17, 3, 2);
+}
+
+// Arbusto
+function drawBush(ctx, x, y) {
+  // 22x14
+  ctx.fillStyle = COLORS.shadow;
+  ctx.beginPath();
+  ctx.ellipse(x + 11, y + 13, 10, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = COLORS.canopyOutline;
+  ctx.fillRect(x + 1, y + 4, 20, 9);
+  ctx.fillRect(x + 3, y + 2, 16, 11);
+  ctx.fillStyle = COLORS.canopyDark;
+  ctx.fillRect(x + 2, y + 5, 18, 7);
+  ctx.fillRect(x + 4, y + 3, 14, 9);
+  ctx.fillStyle = COLORS.canopyMid;
+  ctx.fillRect(x + 3, y + 6, 16, 5);
+  ctx.fillRect(x + 5, y + 4, 12, 7);
+  ctx.fillStyle = COLORS.canopyLight;
+  ctx.fillRect(x + 5, y + 6, 10, 3);
+  ctx.fillStyle = COLORS.canopyShine;
+  ctx.fillRect(x + 6, y + 6, 2, 1);
+  ctx.fillRect(x + 10, y + 5, 2, 1);
+}
+
+// Roca
+function drawRock(ctx, x, y) {
+  // 14x10
+  ctx.fillStyle = COLORS.shadow;
+  ctx.beginPath();
+  ctx.ellipse(x + 7, y + 10, 7, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#5e5852';
+  ctx.fillRect(x + 1, y + 4, 12, 6);
+  ctx.fillStyle = '#807a72';
+  ctx.fillRect(x + 2, y + 3, 10, 6);
+  ctx.fillStyle = '#a09a90';
+  ctx.fillRect(x + 3, y + 2, 8, 4);
+  ctx.fillStyle = '#c2bcb0';
+  ctx.fillRect(x + 4, y + 3, 4, 2);
+  ctx.fillStyle = '#3e3a35';
+  ctx.fillRect(x + 1, y + 8, 12, 2);
+}
+
+// ============================================================
+// SPRITES DE OBJETOS DE ZONA
+// ============================================================
+
+// Camastro (tumbona) — 36x18
+function drawSunbed(ctx, x, y) {
+  ctx.fillStyle = COLORS.shadow;
+  ctx.fillRect(x + 2, y + 16, 32, 3);
+  // Patas
+  ctx.fillStyle = '#7c5a3a';
+  ctx.fillRect(x + 2, y + 12, 2, 6);
+  ctx.fillRect(x + 32, y + 12, 2, 6);
+  // Lonas blancas y franjas
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(x, y + 4, 36, 10);
+  ctx.fillStyle = COLORS.red;
+  ctx.fillRect(x, y + 6, 36, 2);
+  ctx.fillRect(x, y + 10, 36, 2);
+  // Marco
+  ctx.fillStyle = '#3a3a3a';
+  ctx.fillRect(x, y + 4, 36, 1);
+  ctx.fillRect(x, y + 13, 36, 1);
+  // Reposacabezas levantado
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(x + 28, y, 8, 8);
+  ctx.fillStyle = COLORS.red;
+  ctx.fillRect(x + 28, y + 2, 8, 2);
+  ctx.fillStyle = '#3a3a3a';
+  ctx.fillRect(x + 28, y, 8, 1);
+  ctx.fillRect(x + 28, y + 7, 8, 1);
+}
+
+// Sombrilla — 32x36 (la base está abajo)
+function drawUmbrella(ctx, x, y) {
+  // Sombra
+  ctx.fillStyle = COLORS.shadow;
+  ctx.beginPath();
+  ctx.ellipse(x + 16, y + 34, 14, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Mástil
+  ctx.fillStyle = '#3a2818';
+  ctx.fillRect(x + 15, y + 8, 2, 26);
+  // Sombrilla (rayos rojo/blanco)
+  ctx.fillStyle = COLORS.red;
+  ctx.fillRect(x + 4, y + 2, 24, 8);
+  ctx.fillRect(x + 1, y + 6, 30, 4);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(x + 4, y + 6, 6, 4);
+  ctx.fillRect(x + 16, y + 6, 6, 4);
+  // Borde inferior
+  ctx.fillStyle = '#8b0e08';
+  ctx.fillRect(x + 1, y + 9, 30, 2);
+  // Punta superior
+  ctx.fillStyle = COLORS.red;
+  ctx.fillRect(x + 14, y, 4, 3);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(x + 15, y + 1, 2, 1);
+}
+
+// Vela aromática (spa) — 8x12
+function drawCandle(ctx, x, y) {
+  ctx.fillStyle = COLORS.shadow;
+  ctx.fillRect(x + 1, y + 11, 6, 2);
+  ctx.fillStyle = '#dddddd';
+  ctx.fillRect(x, y + 4, 8, 8);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(x, y + 4, 1, 8);
+  ctx.fillStyle = '#666';
+  ctx.fillRect(x + 7, y + 4, 1, 8);
+  // Mecha
+  ctx.fillStyle = '#222';
+  ctx.fillRect(x + 3, y + 2, 2, 2);
+  // Llama
+  ctx.fillStyle = '#ffd84d';
+  ctx.fillRect(x + 3, y, 2, 2);
+  ctx.fillStyle = '#e67e22';
+  ctx.fillRect(x + 3, y + 1, 2, 1);
+}
+
+// Plato de comida (buffet) — 16x10
+function drawPlate(ctx, x, y, foodColor) {
+  ctx.fillStyle = COLORS.shadow;
+  ctx.fillRect(x + 1, y + 9, 14, 2);
+  // Plato
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(x, y + 2, 16, 7);
+  ctx.fillStyle = '#bbb';
+  ctx.fillRect(x, y + 8, 16, 1);
+  // Comida
+  ctx.fillStyle = foodColor;
+  ctx.fillRect(x + 3, y + 3, 10, 4);
+  // Brillito
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(x + 4, y + 3, 2, 1);
+}
+
+// Cama (habitación) — 64x44
+function drawBed(ctx, x, y) {
+  // Sombra
+  ctx.fillStyle = COLORS.shadow;
+  ctx.fillRect(x + 2, y + 40, 60, 4);
+  // Cabecera
+  ctx.fillStyle = '#5c3317';
+  ctx.fillRect(x, y, 64, 8);
+  ctx.fillStyle = '#7c4a23';
+  ctx.fillRect(x + 2, y + 2, 60, 4);
+  // Almohada
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(x + 8, y + 8, 48, 8);
+  ctx.fillStyle = '#ddd';
+  ctx.fillRect(x + 8, y + 14, 48, 2);
+  // Edredón
+  ctx.fillStyle = COLORS.blue;
+  ctx.fillRect(x + 4, y + 16, 56, 24);
+  ctx.fillStyle = '#2a7cb8';
+  ctx.fillRect(x + 4, y + 36, 56, 4);
+  // Rayas decorativas
+  ctx.fillStyle = '#5cb3e8';
+  ctx.fillRect(x + 4, y + 22, 56, 2);
+  ctx.fillRect(x + 4, y + 28, 56, 2);
+  // Marco de la cama
+  ctx.fillStyle = '#5c3317';
+  ctx.fillRect(x, y + 8, 4, 36);
+  ctx.fillRect(x + 60, y + 8, 4, 36);
+  ctx.fillRect(x, y + 40, 64, 4);
+}
+
+// Mesa de buffet — w variable, h=20
+function drawBuffetTable(ctx, x, y, w) {
+  ctx.fillStyle = COLORS.shadow;
+  ctx.fillRect(x + 2, y + 18, w - 4, 3);
+  ctx.fillStyle = '#7c5a3a';
+  ctx.fillRect(x, y, w, 4);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(x, y + 4, w, 14);
+  // Bordes
+  ctx.fillStyle = '#ccc';
+  ctx.fillRect(x, y + 16, w, 2);
+  ctx.fillStyle = '#888';
+  ctx.fillRect(x, y, w, 1);
+  ctx.fillRect(x, y + 17, w, 1);
+}
+
+// Cartel/sign de zona (estilo Pokemon center sign)
+function drawSign(ctx, x, y, w, h, text) {
+  // Postes
+  ctx.fillStyle = '#5c3317';
+  ctx.fillRect(x + 4, y + h, 4, 8);
+  ctx.fillRect(x + w - 8, y + h, 4, 8);
+  // Marco
+  ctx.fillStyle = '#3a2818';
+  ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = '#a87836';
+  ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+  ctx.fillStyle = '#d4a060';
+  ctx.fillRect(x + 3, y + 3, w - 6, h - 6);
+  // Texto
+  ctx.fillStyle = '#3a2818';
+  ctx.font = 'bold 11px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(text, x + w/2, y + h/2 + 4);
+  ctx.textAlign = 'left';
+}
+
+// ============================================================
+// Clase Zone: zonas del mapa (playa, piscina, buffet, spa, habitación).
+// Toda la decoración se renderiza una sola vez al iniciar partida
+// sobre un canvas offscreen del mundo (Game.prerenderWorld), así que
+// estos métodos pueden ser todo lo detallados que queramos sin penalizar
+// el frame rate.
 // ============================================================
 class Zone {
-  constructor(name, x, y, w, h, type, color, recharge) {
-    this.name = name;       // nombre visible
-    this.x = x; this.y = y; // esquina superior izq.
+  constructor(name, displayName, x, y, w, h, type, recharge) {
+    this.name = name;             // nombre completo con emoji para tooltips
+    this.displayName = displayName; // nombre corto para cartel
+    this.x = x; this.y = y;
     this.w = w; this.h = h;
-    this.type = type;       // identificador interno
-    this.color = color;     // color del piso
-    this.recharge = recharge; // efectos al usar (objeto con keys energy/hunger/tan)
-    this.visited = false;   // para mostrar tooltip solo la primera vez
-    this.safe = (type === 'spa' || type === 'room'); // sin closers dentro
+    this.type = type;
+    this.recharge = recharge;
+    this.visited = false;
+    this.safe = (type === 'spa' || type === 'room');
   }
   contains(px, py) {
     return px >= this.x && px <= this.x+this.w && py >= this.y && py <= this.y+this.h;
   }
-  // Dibuja el piso + decoraciones específicas de cada zona
-  draw(ctx, camX, camY) {
-    const dx = this.x - camX, dy = this.y - camY;
-    // Solo si está en pantalla (optimización simple)
-    if (dx + this.w < 0 || dx > CANVAS_W || dy + this.h < 0 || dy > CANVAS_H) return;
 
-    // Piso base
-    pixelRect(ctx, dx, dy, this.w, this.h, this.color);
-
-    // Borde decorativo
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(dx, dy, this.w, this.h);
-
-    // Decoración por tipo
-    if (this.type === 'beach') {
-      // Camastros + sombrillas
-      for (let i = 0; i < 4; i++) {
-        const lx = dx + 40 + i * 80;
-        const ly = dy + 60;
-        pixelRect(ctx, lx, ly, 50, 20, '#fff', '#888');     // camastro
-        pixelRect(ctx, lx + 20, ly - 30, 10, 30, '#7b3f00'); // palo sombrilla
-        pixelRect(ctx, lx - 5, ly - 40, 40, 12, '#e74c3c'); // sombrilla roja
-      }
-      // Línea de mar
-      pixelRect(ctx, dx, dy + this.h - 30, this.w, 30, COLORS.water);
-      pixelRect(ctx, dx, dy + this.h - 30, this.w, 4, COLORS.waterDark);
+  // Dibuja la zona en coordenadas del mundo (usado por prerenderWorld).
+  drawToWorld(ctx, rng) {
+    switch (this.type) {
+      case 'beach':  return this._drawBeach(ctx, rng);
+      case 'pool':   return this._drawPool(ctx, rng);
+      case 'buffet': return this._drawBuffet(ctx, rng);
+      case 'spa':    return this._drawSpa(ctx, rng);
+      case 'room':   return this._drawRoom(ctx, rng);
     }
-    else if (this.type === 'pool') {
-      // Piscina turquesa
-      const px = dx + 40, py = dy + 40, pw = this.w - 80, ph = this.h - 80;
-      pixelRect(ctx, px, py, pw, ph, COLORS.water);
-      pixelRect(ctx, px, py, pw, 4, COLORS.waterDark);
-      pixelRect(ctx, px, py+ph-4, pw, 4, COLORS.waterDark);
-      // "Reflejos" del agua
-      ctx.fillStyle = 'rgba(255,255,255,0.3)';
-      ctx.fillRect(px + 20, py + 20, 40, 4);
-      ctx.fillRect(px + 100, py + 60, 30, 4);
-    }
-    else if (this.type === 'buffet') {
-      // Mesas largas con comida
-      for (let i = 0; i < 3; i++) {
-        const tx = dx + 30, ty = dy + 30 + i * 50;
-        pixelRect(ctx, tx, ty, this.w - 60, 30, '#fff', '#555'); // mesa
-        // platos
-        for (let p = 0; p < 5; p++) {
-          pixelRect(ctx, tx + 10 + p*30, ty+8, 14, 14, p%2===0 ? '#f39c12' : '#e74c3c');
-        }
+  }
+
+  _drawBeach(ctx, rng) {
+    // Piso de arena (todo el cuadrado)
+    for (let y = this.y; y < this.y + this.h; y += 16) {
+      for (let x = this.x; x < this.x + this.w; x += 16) {
+        drawSandTile(ctx, x, y, rng);
       }
     }
-    else if (this.type === 'spa') {
-      // Velas y plantas
-      for (let i = 0; i < 5; i++) {
-        const sx = dx + 20 + i*30, sy = dy + 20;
-        pixelRect(ctx, sx, sy, 12, 12, '#fff'); // vela
-        pixelRect(ctx, sx+4, sy-6, 4, 6, '#f39c12'); // llama
+    // Borde de arena oscura (transición a pasto)
+    ctx.fillStyle = COLORS.sandDark;
+    ctx.fillRect(this.x, this.y, this.w, 2);
+    ctx.fillRect(this.x, this.y + this.h - 2, this.w, 2);
+    ctx.fillRect(this.x, this.y, 2, this.h);
+    ctx.fillRect(this.x + this.w - 2, this.y, 2, this.h);
+    // Banda de océano en la parte inferior (~80px)
+    const oceanY = this.y + this.h - 80;
+    for (let y = oceanY; y < this.y + this.h; y += 16) {
+      for (let x = this.x; x < this.x + this.w; x += 16) {
+        drawWaterTile(ctx, x, y, rng);
       }
-      // Plantas en esquinas
-      pixelRect(ctx, dx + 10, dy + this.h - 30, 16, 20, COLORS.grass);
-      pixelRect(ctx, dx + this.w - 26, dy + this.h - 30, 16, 20, COLORS.grass);
-      // Texto "SPA"
-      ctx.fillStyle = '#8e6c8a';
-      ctx.font = 'bold 18px monospace';
-      ctx.fillText('🌿 SPA 🌿', dx + this.w/2 - 40, dy + this.h/2);
     }
-    else if (this.type === 'room') {
-      // Cama central
-      const bx = dx + this.w/2 - 30, by = dy + this.h/2 - 20;
-      pixelRect(ctx, bx, by, 60, 40, '#fff', '#555');     // colchón
-      pixelRect(ctx, bx, by, 60, 12, '#e74c3c');          // almohada
-      pixelRect(ctx, bx + 8, by + 20, 44, 16, '#3498db'); // edredón
-      // Texto "ZZZ"
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 14px monospace';
-      ctx.fillText('💤 HABITACIÓN', dx + 10, dy + 20);
+    // Espuma donde rompe la ola
+    ctx.fillStyle = COLORS.waterShine;
+    for (let i = 0; i < 20; i++) {
+      const fx = this.x + Math.floor(rng() * this.w);
+      ctx.fillRect(fx, oceanY - 1, 2, 1);
+      ctx.fillRect(fx + 1, oceanY, 2, 1);
+    }
+    ctx.fillStyle = COLORS.white;
+    for (let i = 0; i < 8; i++) {
+      const fx = this.x + Math.floor(rng() * this.w);
+      ctx.fillRect(fx, oceanY - 2, 3, 1);
     }
 
-    // Cartel con nombre de zona (arriba)
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(dx + 4, dy + 4, this.name.length * 9 + 10, 18);
+    // Palmeras en esquinas superiores
+    drawPalmTree(ctx, this.x + 10, this.y + 10);
+    drawPalmTree(ctx, this.x + this.w - 54, this.y + 10);
+
+    // Sombrillas + camastros distribuidos
+    for (let i = 0; i < 4; i++) {
+      const lx = this.x + 60 + (i % 2) * 180;
+      const ly = this.y + 90 + Math.floor(i / 2) * 90;
+      drawUmbrella(ctx, lx - 4, ly - 30);
+      drawSunbed(ctx, lx, ly);
+    }
+
+    // Cartel arriba al centro
+    drawSign(ctx, this.x + this.w/2 - 50, this.y - 30, 100, 22, 'PLAYA');
+  }
+
+  _drawPool(ctx, rng) {
+    // Deck de la piscina (baldosa beige)
+    for (let y = this.y; y < this.y + this.h; y += 16) {
+      for (let x = this.x; x < this.x + this.w; x += 16) {
+        // Patrón de baldosas
+        const tile = ((x/16) + (y/16)) % 2 === 0 ? COLORS.spaFloor : COLORS.spaFloorMid;
+        ctx.fillStyle = tile;
+        ctx.fillRect(x, y, 16, 16);
+        // Línea de mortero
+        ctx.fillStyle = COLORS.spaFloorDark;
+        ctx.fillRect(x, y + 15, 16, 1);
+        ctx.fillRect(x + 15, y, 1, 16);
+      }
+    }
+    // Bordes
+    ctx.fillStyle = COLORS.spaFloorDark;
+    ctx.fillRect(this.x, this.y, this.w, 3);
+    ctx.fillRect(this.x, this.y + this.h - 3, this.w, 3);
+    ctx.fillRect(this.x, this.y, 3, this.h);
+    ctx.fillRect(this.x + this.w - 3, this.y, 3, this.h);
+
+    // Piscina central
+    const px = this.x + 50, py = this.y + 60, pw = this.w - 100, ph = this.h - 120;
+    // Borde de la piscina (azulejo azul)
+    ctx.fillStyle = COLORS.waterDark;
+    ctx.fillRect(px - 6, py - 6, pw + 12, ph + 12);
+    ctx.fillStyle = COLORS.water;
+    ctx.fillRect(px - 4, py - 4, pw + 8, ph + 8);
+    // Agua
+    for (let y = py; y < py + ph; y += 16) {
+      for (let x = px; x < px + pw; x += 16) {
+        drawWaterTile(ctx, x, y, rng);
+      }
+    }
+    // Lineas de carriles (decorativas)
+    ctx.fillStyle = COLORS.waterShine;
+    for (let lane = 0; lane < 3; lane++) {
+      const lY = py + 20 + lane * (ph / 3);
+      for (let lx = px + 5; lx < px + pw - 5; lx += 8) {
+        ctx.fillRect(lx, lY, 4, 1);
+      }
+    }
+    // Escalera
+    ctx.fillStyle = '#ddd';
+    ctx.fillRect(px + pw - 10, py - 6, 2, 12);
+    ctx.fillRect(px + pw - 4, py - 6, 2, 12);
+    ctx.fillRect(px + pw - 10, py, 8, 1);
+    ctx.fillRect(px + pw - 10, py + 4, 8, 1);
+
+    // Tumbonas alrededor
+    drawSunbed(ctx, this.x + 30, this.y + 20);
+    drawSunbed(ctx, this.x + this.w - 70, this.y + 20);
+    drawSunbed(ctx, this.x + 30, this.y + this.h - 36);
+    drawSunbed(ctx, this.x + this.w - 70, this.y + this.h - 36);
+
+    // Salvavidas (donut rojo/blanco)
+    const lcx = this.x + 30, lcy = this.y + this.h - 70;
+    ctx.fillStyle = COLORS.red;
+    ctx.beginPath(); ctx.arc(lcx, lcy, 9, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = COLORS.spaFloor;
+    ctx.beginPath(); ctx.arc(lcx, lcy, 5, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 12px monospace';
-    ctx.fillText(this.name, dx + 9, dy + 17);
+    for (let a = 0; a < 4; a++) {
+      const ang = a * Math.PI/2 + Math.PI/4;
+      ctx.fillRect(lcx + Math.cos(ang)*7 - 1, lcy + Math.sin(ang)*7 - 1, 2, 2);
+    }
+
+    // Cartel
+    drawSign(ctx, this.x + this.w/2 - 60, this.y - 30, 120, 22, 'PISCINA');
+  }
+
+  _drawBuffet(ctx, rng) {
+    // Suelo de baldosas terracota
+    for (let y = this.y; y < this.y + this.h; y += 16) {
+      for (let x = this.x; x < this.x + this.w; x += 16) {
+        const tile = ((x/16) + (y/16)) % 2 === 0 ? COLORS.buffetFloor : COLORS.buffetFloorMid;
+        ctx.fillStyle = tile;
+        ctx.fillRect(x, y, 16, 16);
+        ctx.fillStyle = COLORS.buffetFloorDark;
+        ctx.fillRect(x, y + 15, 16, 1);
+        ctx.fillRect(x + 15, y, 1, 16);
+      }
+    }
+    // Borde de pared
+    ctx.fillStyle = '#5a3320';
+    ctx.fillRect(this.x, this.y, this.w, 6);
+    ctx.fillRect(this.x, this.y + this.h - 6, this.w, 6);
+    ctx.fillRect(this.x, this.y, 6, this.h);
+    ctx.fillRect(this.x + this.w - 6, this.y, 6, this.h);
+    ctx.fillStyle = '#7c4929';
+    ctx.fillRect(this.x + 6, this.y + 6, this.w - 12, 2);
+
+    // 3 mesas largas de buffet con platos
+    const foodColors = ['#f39c12', COLORS.red, '#27ae60', '#f1c40f', '#9b59b6', '#e67e22'];
+    for (let i = 0; i < 3; i++) {
+      const tx = this.x + 40, ty = this.y + 60 + i * 100;
+      drawBuffetTable(ctx, tx, ty, this.w - 80);
+      // Platos
+      for (let p = 0; p < 8; p++) {
+        const px = tx + 8 + p * 38;
+        drawPlate(ctx, px, ty + 4, foodColors[(p + i) % foodColors.length]);
+      }
+    }
+
+    // Caja registradora pequeña
+    ctx.fillStyle = '#333';
+    ctx.fillRect(this.x + this.w - 50, this.y + 30, 24, 18);
+    ctx.fillStyle = '#888';
+    ctx.fillRect(this.x + this.w - 48, this.y + 32, 20, 8);
+    ctx.fillStyle = '#0f0';
+    ctx.fillRect(this.x + this.w - 46, this.y + 34, 4, 1);
+    ctx.fillRect(this.x + this.w - 46, this.y + 36, 6, 1);
+
+    // Cartel
+    drawSign(ctx, this.x + this.w/2 - 60, this.y - 30, 120, 22, 'BUFFET');
+  }
+
+  _drawSpa(ctx, rng) {
+    // Suelo de mosaico (beige claro con líneas)
+    for (let y = this.y; y < this.y + this.h; y += 16) {
+      for (let x = this.x; x < this.x + this.w; x += 16) {
+        const tile = ((x/16) + (y/16)) % 2 === 0 ? COLORS.spaFloor : COLORS.spaFloorMid;
+        ctx.fillStyle = tile;
+        ctx.fillRect(x, y, 16, 16);
+        ctx.fillStyle = COLORS.spaFloorDark;
+        ctx.fillRect(x, y + 15, 16, 1);
+        ctx.fillRect(x + 15, y, 1, 16);
+      }
+    }
+    // Pared
+    ctx.fillStyle = '#7c637c';
+    ctx.fillRect(this.x, this.y, this.w, 6);
+    ctx.fillRect(this.x, this.y + this.h - 6, this.w, 6);
+    ctx.fillRect(this.x, this.y, 6, this.h);
+    ctx.fillRect(this.x + this.w - 6, this.y, 6, this.h);
+    ctx.fillStyle = '#a087a0';
+    ctx.fillRect(this.x + 6, this.y + 6, this.w - 12, 2);
+
+    // Fuente central
+    const fcx = this.x + this.w/2, fcy = this.y + this.h/2;
+    // Base de la fuente
+    ctx.fillStyle = '#888';
+    ctx.beginPath(); ctx.arc(fcx, fcy, 36, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#aaa';
+    ctx.beginPath(); ctx.arc(fcx, fcy, 34, 0, Math.PI*2); ctx.fill();
+    // Agua
+    ctx.fillStyle = COLORS.water;
+    ctx.beginPath(); ctx.arc(fcx, fcy, 28, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = COLORS.waterLight;
+    ctx.beginPath(); ctx.arc(fcx, fcy, 24, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = COLORS.water;
+    ctx.beginPath(); ctx.arc(fcx, fcy, 20, 0, Math.PI*2); ctx.fill();
+    // Pilar central
+    ctx.fillStyle = '#aaa';
+    ctx.beginPath(); ctx.arc(fcx, fcy, 8, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ccc';
+    ctx.beginPath(); ctx.arc(fcx, fcy - 1, 6, 0, Math.PI*2); ctx.fill();
+    // Brillos
+    ctx.fillStyle = COLORS.waterShine;
+    ctx.fillRect(fcx - 14, fcy - 16, 4, 1);
+    ctx.fillRect(fcx + 6, fcy + 10, 4, 1);
+
+    // Velas alineadas en la pared superior
+    for (let i = 0; i < 7; i++) {
+      drawCandle(ctx, this.x + 30 + i * 50, this.y + 20);
+    }
+    // Plantas en las esquinas
+    drawBush(ctx, this.x + 10, this.y + this.h - 24);
+    drawBush(ctx, this.x + this.w - 32, this.y + this.h - 24);
+    drawBush(ctx, this.x + 10, this.y + 40);
+    drawBush(ctx, this.x + this.w - 32, this.y + 40);
+
+    // Cartel
+    drawSign(ctx, this.x + this.w/2 - 40, this.y - 30, 80, 22, 'SPA');
+  }
+
+  _drawRoom(ctx, rng) {
+    // Alfombra/parquet
+    for (let y = this.y; y < this.y + this.h; y += 16) {
+      for (let x = this.x; x < this.x + this.w; x += 16) {
+        const tile = ((x/16) + (y/16)) % 2 === 0 ? COLORS.roomFloor : COLORS.roomFloorMid;
+        ctx.fillStyle = tile;
+        ctx.fillRect(x, y, 16, 16);
+      }
+    }
+    // Líneas de parquet
+    ctx.fillStyle = COLORS.roomFloorDark;
+    for (let y = this.y; y < this.y + this.h; y += 16) {
+      ctx.fillRect(this.x, y, this.w, 1);
+    }
+    for (let x = this.x; x < this.x + this.w; x += 32) {
+      ctx.fillRect(x, this.y, 1, this.h);
+    }
+    // Alfombra central (más clara, decorativa)
+    const rugX = this.x + 40, rugY = this.y + 60;
+    const rugW = this.w - 80, rugH = this.h - 120;
+    ctx.fillStyle = '#c97c5d';
+    ctx.fillRect(rugX, rugY, rugW, rugH);
+    ctx.fillStyle = '#a85838';
+    ctx.fillRect(rugX, rugY, rugW, 3);
+    ctx.fillRect(rugX, rugY + rugH - 3, rugW, 3);
+    ctx.fillRect(rugX, rugY, 3, rugH);
+    ctx.fillRect(rugX + rugW - 3, rugY, 3, rugH);
+    ctx.fillStyle = '#e8a878';
+    ctx.fillRect(rugX + 6, rugY + 6, rugW - 12, rugH - 12);
+    ctx.fillStyle = '#a85838';
+    ctx.fillRect(rugX + rugW/2 - 8, rugY + rugH/2 - 8, 16, 16);
+
+    // Pared trasera (parte superior)
+    ctx.fillStyle = '#5a4a5a';
+    ctx.fillRect(this.x, this.y, this.w, 8);
+    ctx.fillStyle = '#7c637c';
+    ctx.fillRect(this.x, this.y + 6, this.w, 2);
+    // Bordes laterales
+    ctx.fillStyle = '#5a4a5a';
+    ctx.fillRect(this.x, this.y, 4, this.h);
+    ctx.fillRect(this.x + this.w - 4, this.y, 4, this.h);
+    ctx.fillRect(this.x, this.y + this.h - 4, this.w, 4);
+
+    // Cama central
+    drawBed(ctx, this.x + this.w/2 - 32, this.y + this.h/2 - 30);
+
+    // Mesita con lámpara a la izquierda
+    ctx.fillStyle = '#5c3317';
+    ctx.fillRect(this.x + 30, this.y + this.h/2 - 12, 22, 22);
+    ctx.fillStyle = '#7c4a23';
+    ctx.fillRect(this.x + 32, this.y + this.h/2 - 10, 18, 18);
+    // Lámpara
+    ctx.fillStyle = '#3a2818';
+    ctx.fillRect(this.x + 39, this.y + this.h/2 - 22, 4, 12);
+    ctx.fillStyle = '#ffd84d';
+    ctx.fillRect(this.x + 35, this.y + this.h/2 - 32, 12, 12);
+    ctx.fillStyle = '#fff3c0';
+    ctx.fillRect(this.x + 36, this.y + this.h/2 - 30, 8, 4);
+
+    // TV / televisor en la pared opuesta
+    const tvX = this.x + this.w - 60, tvY = this.y + 14;
+    ctx.fillStyle = '#222';
+    ctx.fillRect(tvX, tvY, 50, 30);
+    ctx.fillStyle = '#3ec4d9';
+    ctx.fillRect(tvX + 4, tvY + 4, 42, 20);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(tvX + 8, tvY + 8, 6, 1);
+    ctx.fillRect(tvX + 16, tvY + 10, 12, 1);
+    // Pie
+    ctx.fillStyle = '#333';
+    ctx.fillRect(tvX + 20, tvY + 30, 10, 4);
+
+    // Cartel
+    drawSign(ctx, this.x + this.w/2 - 60, this.y - 30, 120, 22, 'HABITACION');
   }
 }
 
@@ -574,44 +1355,264 @@ class Player {
     if (this.invulnerable > 0) this.invulnerable -= dt;
   }
 
-  // Dibujo pixel art de Link tropical
+  // Dibujo del player: turista con sombrero verde, camiseta blanca, shorts rojos.
+  // Pixel art con outline negro, sombreado en el lado derecho, y animación de caminar.
   draw(ctx, camX, camY) {
-    const x = this.x - camX, y = this.y - camY;
+    const x = Math.round(this.x - camX), y = Math.round(this.y - camY);
 
     // Parpadeo durante invulnerabilidad
     if (this.invulnerable > 0 && Math.floor(this.invulnerable * 10) % 2 === 0) return;
 
-    // Sombra
+    // Sombra elíptica
     ctx.fillStyle = COLORS.shadow;
-    ctx.fillRect(x + 2, y + this.h - 3, this.w - 4, 4);
+    ctx.beginPath();
+    ctx.ellipse(x + 12, y + 23, 8, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Cuerpo (24x24) construido en 6x6 píxeles de 4x4
-    // Sombrero verde (fila superior)
-    pixelRect(ctx, x + 4, y, 16, 6, COLORS.playerHat);
-    pixelRect(ctx, x + 2, y + 4, 20, 4, COLORS.playerHat);
-    // Cara
-    pixelRect(ctx, x + 6, y + 8, 12, 6, COLORS.playerSkin);
-    // Ojos según dirección
-    ctx.fillStyle = '#000';
-    if (this.dir === 'left') {
-      ctx.fillRect(x + 7, y + 10, 2, 2);
-    } else if (this.dir === 'right') {
-      ctx.fillRect(x + 15, y + 10, 2, 2);
-    } else if (this.dir === 'up') {
-      // sin ojos visibles (mirando arriba)
-    } else {
-      ctx.fillRect(x + 9, y + 10, 2, 2);
-      ctx.fillRect(x + 13, y + 10, 2, 2);
+    const swing = this.walkFrame === 0 ? 0 : 1;
+    switch (this.dir) {
+      case 'down':  this._drawDown(ctx, x, y, swing); break;
+      case 'up':    this._drawUp(ctx, x, y, swing); break;
+      case 'left':  this._drawSide(ctx, x, y, swing, false); break;
+      case 'right': this._drawSide(ctx, x, y, swing, true); break;
     }
-    // Camiseta blanca
-    pixelRect(ctx, x + 4, y + 14, 16, 6, COLORS.playerShirt);
-    // Shorts rojos
-    pixelRect(ctx, x + 4, y + 20, 16, 4, COLORS.playerShorts);
-    // Piernas con animación
-    const legOffset = this.walkFrame === 0 ? 0 : 2;
-    ctx.fillStyle = COLORS.playerSkin;
-    ctx.fillRect(x + 6 + legOffset, y + 22, 4, 2);
-    ctx.fillRect(x + 14 - legOffset, y + 22, 4, 2);
+  }
+
+  // Helper para rellenar rectángulos sin tener que setear fillStyle cada vez
+  _rect(ctx, x, y, w, h, c) {
+    ctx.fillStyle = c;
+    ctx.fillRect(x, y, w, h);
+  }
+
+  _drawDown(ctx, x, y, swing) {
+    const R = (a,b,c,d,e) => this._rect(ctx, x+a, y+b, c, d, e);
+    // --- Sombrero verde (forma de gorra/sombrero de playa) ---
+    // Copa
+    R(9, 0, 6, 1, COLORS.pHat);
+    R(7, 1, 10, 1, COLORS.pHat);
+    R(6, 2, 12, 2, COLORS.pHat);
+    // Highlight de copa (izquierda)
+    R(8, 1, 2, 1, COLORS.pHatLight);
+    R(7, 2, 3, 1, COLORS.pHatLight);
+    // Banda oscura del sombrero
+    R(5, 4, 14, 1, COLORS.pHatDark);
+    // Ala ancha
+    R(3, 5, 18, 1, COLORS.pHat);
+    R(2, 6, 20, 1, COLORS.pHat);
+    R(2, 7, 20, 1, COLORS.pHatDark);
+    // Outlines sombrero
+    R(8, 0, 1, 1, COLORS.pOutline);
+    R(15, 0, 1, 1, COLORS.pOutline);
+    R(6, 1, 1, 1, COLORS.pOutline);
+    R(17, 1, 1, 1, COLORS.pOutline);
+    R(5, 2, 1, 2, COLORS.pOutline);
+    R(18, 2, 1, 2, COLORS.pOutline);
+    R(2, 5, 1, 1, COLORS.pOutline);
+    R(21, 5, 1, 1, COLORS.pOutline);
+    R(1, 6, 1, 1, COLORS.pOutline);
+    R(22, 6, 1, 1, COLORS.pOutline);
+    R(1, 7, 1, 1, COLORS.pOutline);
+    R(22, 7, 1, 1, COLORS.pOutline);
+
+    // --- Pelo asomando ---
+    R(6, 8, 2, 1, COLORS.pHair);
+    R(16, 8, 2, 1, COLORS.pHair);
+
+    // --- Cara ---
+    R(7, 8, 10, 5, COLORS.pSkin);
+    // Sombreado lado derecho
+    R(15, 8, 2, 5, COLORS.pSkinShadow);
+    // Outline cara
+    R(6, 9, 1, 4, COLORS.pOutline);
+    R(17, 9, 1, 4, COLORS.pOutline);
+    R(7, 13, 10, 1, COLORS.pOutline);
+    // Ojos
+    R(9, 10, 2, 2, COLORS.pOutline);
+    R(13, 10, 2, 2, COLORS.pOutline);
+    // Brillito en ojos
+    R(10, 10, 1, 1, COLORS.white);
+    R(14, 10, 1, 1, COLORS.white);
+    // Sonrisa
+    R(10, 12, 4, 1, COLORS.pOutline);
+    R(11, 11, 2, 1, COLORS.pSkinShadow);
+
+    // --- Cuello/camiseta ---
+    R(9, 14, 6, 1, COLORS.pShirt);
+    // Cuerpo camiseta
+    R(5, 15, 14, 4, COLORS.pShirt);
+    // Sombreado camiseta
+    R(17, 15, 2, 4, COLORS.pShirtShadow);
+    R(5, 18, 14, 1, COLORS.pShirtShadow);
+    // Outline camiseta
+    R(4, 15, 1, 4, COLORS.pOutline);
+    R(19, 15, 1, 4, COLORS.pOutline);
+    R(5, 14, 4, 1, COLORS.pOutline);
+    R(15, 14, 4, 1, COLORS.pOutline);
+
+    // --- Brazos (asomando) ---
+    R(3, 16, 2, 3, COLORS.pSkin);
+    R(19, 16, 2, 3, COLORS.pSkin);
+    R(20, 16, 1, 3, COLORS.pSkinShadow);
+    R(2, 16, 1, 3, COLORS.pOutline);
+    R(21, 16, 1, 3, COLORS.pOutline);
+    R(2, 19, 3, 1, COLORS.pOutline);
+    R(19, 19, 3, 1, COLORS.pOutline);
+
+    // --- Shorts ---
+    R(5, 19, 14, 2, COLORS.pShorts);
+    R(5, 21, 14, 1, COLORS.pShortsShadow);
+    R(17, 19, 2, 2, COLORS.pShortsShadow);
+    R(4, 19, 1, 3, COLORS.pOutline);
+    R(19, 19, 1, 3, COLORS.pOutline);
+    R(5, 22, 14, 1, COLORS.pOutline);
+
+    // --- Piernas y zapatos con animación ---
+    R(6 - swing, 22, 4, 1, COLORS.pSkin);
+    R(14 + swing, 22, 4, 1, COLORS.pSkin);
+    R(6 - swing, 22, 1, 1, COLORS.pOutline);
+    R(13 + swing, 22, 1, 1, COLORS.pOutline);
+    R(9 - swing, 22, 1, 1, COLORS.pOutline);
+    R(17 + swing, 22, 1, 1, COLORS.pOutline);
+    // Zapatos
+    R(5 - swing, 23, 5, 1, COLORS.pShoes);
+    R(14 + swing, 23, 5, 1, COLORS.pShoes);
+  }
+
+  _drawUp(ctx, x, y, swing) {
+    const R = (a,b,c,d,e) => this._rect(ctx, x+a, y+b, c, d, e);
+    // Sombrero igual
+    R(9, 0, 6, 1, COLORS.pHat);
+    R(7, 1, 10, 1, COLORS.pHat);
+    R(6, 2, 12, 2, COLORS.pHat);
+    R(8, 1, 2, 1, COLORS.pHatLight);
+    R(7, 2, 3, 1, COLORS.pHatLight);
+    R(5, 4, 14, 1, COLORS.pHatDark);
+    R(3, 5, 18, 1, COLORS.pHat);
+    R(2, 6, 20, 1, COLORS.pHat);
+    R(2, 7, 20, 1, COLORS.pHatDark);
+    R(8, 0, 1, 1, COLORS.pOutline);
+    R(15, 0, 1, 1, COLORS.pOutline);
+    R(6, 1, 1, 1, COLORS.pOutline);
+    R(17, 1, 1, 1, COLORS.pOutline);
+    R(5, 2, 1, 2, COLORS.pOutline);
+    R(18, 2, 1, 2, COLORS.pOutline);
+    R(2, 5, 1, 1, COLORS.pOutline);
+    R(21, 5, 1, 1, COLORS.pOutline);
+    R(1, 6, 1, 1, COLORS.pOutline);
+    R(22, 6, 1, 1, COLORS.pOutline);
+    R(1, 7, 1, 1, COLORS.pOutline);
+    R(22, 7, 1, 1, COLORS.pOutline);
+
+    // Nuca: pelo dominante
+    R(6, 8, 12, 6, COLORS.pHair);
+    R(15, 8, 3, 6, '#3a1f0d');
+    R(6, 13, 12, 1, COLORS.pOutline);
+    R(5, 9, 1, 4, COLORS.pOutline);
+    R(18, 9, 1, 4, COLORS.pOutline);
+
+    // Cuerpo igual (vista trasera)
+    R(9, 14, 6, 1, COLORS.pShirt);
+    R(5, 15, 14, 4, COLORS.pShirt);
+    R(17, 15, 2, 4, COLORS.pShirtShadow);
+    R(5, 18, 14, 1, COLORS.pShirtShadow);
+    R(4, 15, 1, 4, COLORS.pOutline);
+    R(19, 15, 1, 4, COLORS.pOutline);
+    R(5, 14, 4, 1, COLORS.pOutline);
+    R(15, 14, 4, 1, COLORS.pOutline);
+    // Brazos
+    R(3, 16, 2, 3, COLORS.pSkin);
+    R(19, 16, 2, 3, COLORS.pSkin);
+    R(20, 16, 1, 3, COLORS.pSkinShadow);
+    R(2, 16, 1, 3, COLORS.pOutline);
+    R(21, 16, 1, 3, COLORS.pOutline);
+    R(2, 19, 3, 1, COLORS.pOutline);
+    R(19, 19, 3, 1, COLORS.pOutline);
+    // Shorts
+    R(5, 19, 14, 2, COLORS.pShorts);
+    R(5, 21, 14, 1, COLORS.pShortsShadow);
+    R(17, 19, 2, 2, COLORS.pShortsShadow);
+    R(4, 19, 1, 3, COLORS.pOutline);
+    R(19, 19, 1, 3, COLORS.pOutline);
+    R(5, 22, 14, 1, COLORS.pOutline);
+    // Piernas (animación invertida para "atrás")
+    R(6 + swing, 22, 4, 1, COLORS.pSkin);
+    R(14 - swing, 22, 4, 1, COLORS.pSkin);
+    R(5 + swing, 23, 5, 1, COLORS.pShoes);
+    R(14 - swing, 23, 5, 1, COLORS.pShoes);
+  }
+
+  _drawSide(ctx, x, y, swing, right) {
+    // Reflejo horizontal: dibujamos siempre "right" y para "left" reflejamos con flip()
+    const flip = right ? 1 : -1;
+    const mx = right ? 0 : 23; // offset si reflejado
+    const R = (a, b, c, d, color) => {
+      const dx = right ? a : (24 - a - c);
+      this._rect(ctx, x + dx, y + b, c, d, color);
+    };
+
+    // Sombrero
+    R(9, 0, 6, 1, COLORS.pHat);
+    R(7, 1, 10, 1, COLORS.pHat);
+    R(6, 2, 12, 2, COLORS.pHat);
+    R(7, 2, 3, 1, COLORS.pHatLight);
+    R(5, 4, 14, 1, COLORS.pHatDark);
+    R(3, 5, 18, 1, COLORS.pHat);
+    R(2, 6, 20, 1, COLORS.pHat);
+    R(2, 7, 20, 1, COLORS.pHatDark);
+    R(8, 0, 1, 1, COLORS.pOutline);
+    R(15, 0, 1, 1, COLORS.pOutline);
+    R(6, 1, 1, 1, COLORS.pOutline);
+    R(17, 1, 1, 1, COLORS.pOutline);
+    R(5, 2, 1, 2, COLORS.pOutline);
+    R(18, 2, 1, 2, COLORS.pOutline);
+    R(2, 5, 1, 1, COLORS.pOutline);
+    R(21, 5, 1, 1, COLORS.pOutline);
+    R(1, 6, 1, 1, COLORS.pOutline);
+    R(22, 6, 1, 1, COLORS.pOutline);
+    R(1, 7, 1, 1, COLORS.pOutline);
+    R(22, 7, 1, 1, COLORS.pOutline);
+
+    // Cara de perfil
+    R(7, 8, 10, 5, COLORS.pSkin);
+    R(14, 8, 3, 5, COLORS.pSkinShadow); // sombra atrás (lado opuesto)
+    R(6, 9, 1, 4, COLORS.pOutline);
+    R(17, 9, 1, 4, COLORS.pOutline);
+    R(7, 13, 10, 1, COLORS.pOutline);
+    // Pelo asomando atrás
+    R(15, 8, 3, 1, COLORS.pHair);
+    // Ojo (uno solo, mirando adelante = a la derecha si right=true)
+    R(11, 10, 2, 2, COLORS.pOutline);
+    R(12, 10, 1, 1, COLORS.white);
+    // Sonrisa
+    R(11, 12, 3, 1, COLORS.pOutline);
+
+    // Cuerpo
+    R(5, 14, 14, 5, COLORS.pShirt);
+    R(15, 14, 4, 5, COLORS.pShirtShadow);
+    R(4, 15, 1, 4, COLORS.pOutline);
+    R(19, 15, 1, 4, COLORS.pOutline);
+    R(5, 14, 14, 1, COLORS.pOutline);
+    R(5, 19, 14, 1, COLORS.pOutline);
+    // Brazo adelante (más grande)
+    R(15, 17, 3, 3, COLORS.pSkin);
+    R(15, 17, 3, 1, COLORS.pSkinShadow);
+    R(14, 17, 1, 3, COLORS.pOutline);
+    R(18, 17, 1, 3, COLORS.pOutline);
+
+    // Shorts
+    R(5, 19, 14, 3, COLORS.pShorts);
+    R(5, 21, 14, 1, COLORS.pShortsShadow);
+    R(15, 19, 4, 3, COLORS.pShortsShadow);
+    R(4, 19, 1, 3, COLORS.pOutline);
+    R(19, 19, 1, 3, COLORS.pOutline);
+    R(5, 22, 14, 1, COLORS.pOutline);
+
+    // Piernas: en perfil, una pierna adelante (swing) y otra atrás
+    const f = swing === 0 ? 0 : 2;
+    R(6, 22, 4, 1, COLORS.pSkin);
+    R(13 + f, 22, 4, 1, COLORS.pSkin);
+    R(5, 23, 5, 1, COLORS.pShoes);
+    R(12 + f, 23, 5, 1, COLORS.pShoes);
   }
 
   // AABB para colisiones
@@ -706,62 +1707,167 @@ class Closer {
     if (this.phraseTimer > 0) this.phraseTimer -= dt;
   }
 
+  // Dibujo de la closer: mujer rubia con pelo largo, vestido turquesa,
+  // clipboard en la mano, sonrisa marca registrada.
   draw(ctx, camX, camY) {
-    const x = this.x - camX, y = this.y - camY;
+    const x = Math.round(this.x - camX), y = Math.round(this.y - camY);
 
     // Sombra
     ctx.fillStyle = COLORS.shadow;
-    ctx.fillRect(x + 2, y + this.h - 3, this.w - 4, 4);
+    ctx.beginPath();
+    ctx.ellipse(x + 12, y + 23, 8, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Pelo amarillo largo (sobresale por arriba)
-    pixelRect(ctx, x + 2, y - 4, 20, 12, COLORS.closerHair);
-    pixelRect(ctx, x, y + 4, 6, 14, COLORS.closerHair);   // mecha izquierda larga
-    pixelRect(ctx, x + 18, y + 4, 6, 14, COLORS.closerHair); // mecha derecha larga
-    // Cara
-    pixelRect(ctx, x + 6, y + 6, 12, 8, COLORS.closerSkin);
-    // Ojos
-    ctx.fillStyle = '#000';
-    ctx.fillRect(x + 8, y + 9, 2, 2);
-    ctx.fillRect(x + 14, y + 9, 2, 2);
-    // Sonrisa (línea curva con 3 puntos)
-    ctx.fillRect(x + 9, y + 12, 2, 1);
-    ctx.fillRect(x + 11, y + 13, 2, 1);
-    ctx.fillRect(x + 13, y + 12, 2, 1);
-    // Vestido turquesa
-    pixelRect(ctx, x + 4, y + 14, 16, 8, COLORS.closerDress);
-    // Piernas animadas
-    const legOff = this.walkFrame === 0 ? 0 : 2;
-    ctx.fillStyle = COLORS.closerSkin;
-    ctx.fillRect(x + 6 + legOff, y + 22, 4, 2);
-    ctx.fillRect(x + 14 - legOff, y + 22, 4, 2);
+    const swing = this.walkFrame === 0 ? 0 : 1;
+    const R = (a, b, c, d, color) => { ctx.fillStyle = color; ctx.fillRect(x + a, y + b, c, d); };
 
-    // Ícono "!" al perseguir
+    // === Pelo largo (cae hasta el cuello) ===
+    // Mechas laterales que sobresalen abajo
+    R(2, 6, 4, 14, COLORS.cHairDark);   // mecha izq con sombra
+    R(3, 6, 3, 14, COLORS.cHair);
+    R(3, 6, 1, 12, COLORS.cHairLight);
+    R(18, 6, 4, 14, COLORS.cHairDark);  // mecha der
+    R(18, 6, 3, 14, COLORS.cHair);
+    R(20, 6, 1, 12, COLORS.cHairLight);
+    // Outline mechas
+    R(1, 7, 1, 12, COLORS.cOutline);
+    R(22, 7, 1, 12, COLORS.cOutline);
+    R(2, 19, 4, 1, COLORS.cOutline);
+    R(18, 19, 4, 1, COLORS.cOutline);
+
+    // === Cabeza ===
+    // Top de pelo (flequillo)
+    R(7, 1, 10, 1, COLORS.cHairDark);
+    R(5, 2, 14, 3, COLORS.cHair);
+    R(7, 2, 10, 1, COLORS.cHairLight);
+    R(5, 5, 14, 2, COLORS.cHairDark); // sombra al fondo del pelo
+    // Outlines pelo
+    R(6, 0, 1, 1, COLORS.cOutline);
+    R(17, 0, 1, 1, COLORS.cOutline);
+    R(5, 1, 1, 1, COLORS.cOutline);
+    R(18, 1, 1, 1, COLORS.cOutline);
+    R(4, 2, 1, 4, COLORS.cOutline);
+    R(19, 2, 1, 4, COLORS.cOutline);
+
+    // === Cara ===
+    R(6, 7, 12, 6, COLORS.cSkin);
+    R(15, 7, 3, 6, COLORS.cSkinShadow);
+    R(5, 8, 1, 4, COLORS.cOutline);
+    R(18, 8, 1, 4, COLORS.cOutline);
+    R(6, 13, 12, 1, COLORS.cOutline);
+
+    // Ojos grandes (estilo anime/marketing)
+    R(8, 9, 2, 2, COLORS.cOutline);
+    R(14, 9, 2, 2, COLORS.cOutline);
+    R(9, 9, 1, 1, COLORS.white);
+    R(15, 9, 1, 1, COLORS.white);
+    // Pestañas
+    R(8, 8, 2, 1, COLORS.cOutline);
+    R(14, 8, 2, 1, COLORS.cOutline);
+
+    // Boca con lipstick rosa (sonrisa de venta)
+    R(10, 11, 4, 1, COLORS.cLipstick);
+    R(11, 12, 2, 1, COLORS.cLipstick);
+
+    // === Vestido turquesa ===
+    R(5, 14, 14, 5, COLORS.cDress);
+    R(15, 14, 4, 5, COLORS.cDressShadow);
+    R(5, 14, 14, 1, COLORS.cDressShine);
+    R(4, 14, 1, 5, COLORS.cOutline);
+    R(19, 14, 1, 5, COLORS.cOutline);
+    // Cintura (línea más oscura)
+    R(5, 18, 14, 1, COLORS.cDressShadow);
+    // Decoración - logo del resort en pecho (corazón pequeño dorado)
+    R(11, 16, 2, 1, COLORS.yellow);
+    R(10, 16, 1, 1, COLORS.yellow);
+    R(13, 16, 1, 1, COLORS.yellow);
+
+    // Falda corta (se ensancha)
+    R(4, 19, 16, 2, COLORS.cDress);
+    R(16, 19, 4, 2, COLORS.cDressShadow);
+    R(3, 19, 1, 2, COLORS.cOutline);
+    R(20, 19, 1, 2, COLORS.cOutline);
+    R(4, 21, 16, 1, COLORS.cOutline);
+
+    // === Brazos / Clipboard ===
+    // Brazo izquierdo cae
+    R(3, 14, 2, 5, COLORS.cSkin);
+    R(2, 14, 1, 5, COLORS.cOutline);
+    // Brazo derecho sosteniendo clipboard
+    R(19, 14, 2, 4, COLORS.cSkin);
+    R(21, 15, 1, 3, COLORS.cOutline);
+    // Clipboard (sale por la derecha)
+    R(20, 16, 5, 6, COLORS.cBoardEdge);
+    R(21, 17, 3, 4, COLORS.cBoard);
+    // Líneas en el clipboard
+    R(21, 18, 3, 1, COLORS.cBoardEdge);
+    R(21, 19, 2, 1, COLORS.cBoardEdge);
+    // Clip metálico arriba
+    R(22, 16, 1, 1, '#888');
+
+    // === Piernas con animación + tacones ===
+    R(7 + swing, 22, 4, 1, COLORS.cSkin);
+    R(13 - swing, 22, 4, 1, COLORS.cSkin);
+    R(7 + swing, 22, 1, 1, COLORS.cOutline);
+    R(10 + swing, 22, 1, 1, COLORS.cOutline);
+    R(13 - swing, 22, 1, 1, COLORS.cOutline);
+    R(16 - swing, 22, 1, 1, COLORS.cOutline);
+    // Tacones rojos
+    R(7 + swing, 23, 4, 1, COLORS.red);
+    R(13 - swing, 23, 4, 1, COLORS.red);
+
+    // Ícono "!" al perseguir (alerta naranja con outline)
     if (this.state === 'chase') {
-      ctx.fillStyle = '#fff';
-      ctx.strokeStyle = '#e74c3c';
-      ctx.lineWidth = 2;
+      const ax = x + 12, ay = y - 14;
+      ctx.fillStyle = COLORS.yellow;
       ctx.beginPath();
-      ctx.arc(x + this.w/2, y - 12, 8, 0, Math.PI*2);
-      ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#e74c3c';
-      ctx.font = 'bold 12px monospace';
-      ctx.fillText('!', x + this.w/2 - 3, y - 8);
+      ctx.arc(ax, ay, 9, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = COLORS.red;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = COLORS.red;
+      ctx.font = 'bold 14px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('!', ax, ay + 1);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
     }
 
-    // Frase flotante
+    // Frase flotante (bocadillo)
     if (this.phraseTimer > 0 && this.phrase) {
       const phr = this.phrase;
       ctx.font = 'bold 11px monospace';
       const tw = ctx.measureText(phr).width;
-      const bx = x + this.w/2 - tw/2 - 6;
-      const by = y - 40;
-      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      const bx = x + 12 - tw/2 - 6;
+      const by = y - 48;
+      // Sombra del bocadillo
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.fillRect(bx + 2, by + 2, tw + 12, 18);
+      // Bocadillo
+      ctx.fillStyle = 'rgba(255,255,255,0.97)';
       ctx.fillRect(bx, by, tw + 12, 18);
-      ctx.strokeStyle = '#000';
+      ctx.strokeStyle = COLORS.cOutline;
       ctx.lineWidth = 1;
-      ctx.strokeRect(bx, by, tw + 12, 18);
-      ctx.fillStyle = '#000';
-      ctx.fillText(phr, bx + 6, by + 12);
+      ctx.strokeRect(bx + 0.5, by + 0.5, tw + 11, 17);
+      // Pico del bocadillo
+      ctx.fillStyle = 'rgba(255,255,255,0.97)';
+      ctx.beginPath();
+      ctx.moveTo(x + 8, by + 18);
+      ctx.lineTo(x + 12, by + 24);
+      ctx.lineTo(x + 16, by + 18);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = COLORS.cOutline;
+      ctx.beginPath();
+      ctx.moveTo(x + 8, by + 18);
+      ctx.lineTo(x + 12, by + 24);
+      ctx.lineTo(x + 16, by + 18);
+      ctx.stroke();
+      // Texto
+      ctx.fillStyle = COLORS.cOutline;
+      ctx.fillText(phr, bx + 6, by + 13);
     }
   }
 }
@@ -802,6 +1908,10 @@ class Game {
     this.canvas = document.getElementById('game');
     this.ctx = this.canvas.getContext('2d');
     this.ctx.imageSmoothingEnabled = false;
+    // Tamaño dinámico para fullscreen
+    this.resizeCanvas();
+    window.addEventListener('resize', () => this.resizeCanvas());
+    window.addEventListener('orientationchange', () => this.resizeCanvas());
 
     this.state = 'menu'; // menu | playing | paused | escape | gameover | win
     this.lastTime = 0;
@@ -846,6 +1956,7 @@ class Game {
     this.bindUI();
     this.bindGameKeys();
     this.bindTouchControls();
+    this._updateControlsVisibility();
   }
 
   // ===== Controles táctiles =====
@@ -944,15 +2055,25 @@ class Game {
     stage.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
   }
 
+  resizeCanvas() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    CANVAS_W = w;
+    CANVAS_H = h;
+    this.canvas.width = w;
+    this.canvas.height = h;
+    this.ctx.imageSmoothingEnabled = false;
+  }
+
   setupZones() {
-    // Posiciones de zonas en el mundo 2000x2000
-    // Cada zona tiene piso amplio para que el jugador pueda entrar
+    // Posiciones de zonas en el mundo 2000x2000.
+    // Constructor: (nombreCompleto, nombreCorto, x, y, w, h, tipo, recarga)
     this.zones = [
-      new Zone('🏖️ PLAYA',     1500, 1500, 400, 400, 'beach',  COLORS.sand,        { tan: 40, energy: -5 }),
-      new Zone('🏊 PISCINA',    1500, 200,  400, 400, 'pool',   COLORS.water,       { tan: 25, energy: 15 }),
-      new Zone('🍤 BUFFET',     200,  200,  400, 400, 'buffet', COLORS.buffetFloor, { hunger: 50, energy: -5 }),
-      new Zone('💆 SPA',        200,  1500, 400, 400, 'spa',    COLORS.spaFloor,    { energy: 100 }),
-      new Zone('🛏️ HABITACIÓN', 850,  850,  300, 300, 'room',   COLORS.roomFloor,   { sleep: true })
+      new Zone('🏖️ PLAYA',     'PLAYA',       1500, 1500, 400, 400, 'beach',  { tan: 40, energy: -5 }),
+      new Zone('🏊 PISCINA',    'PISCINA',     1500, 200,  400, 400, 'pool',   { tan: 25, energy: 15 }),
+      new Zone('🍤 BUFFET',     'BUFFET',      200,  200,  400, 400, 'buffet', { hunger: 50, energy: -5 }),
+      new Zone('💆 SPA',        'SPA',         200,  1500, 400, 400, 'spa',    { energy: 100 }),
+      new Zone('🛏️ HABITACIÓN', 'HABITACION',  850,  850,  300, 300, 'room',   { sleep: true })
     ];
   }
 
@@ -983,6 +2104,14 @@ class Game {
     });
   }
 
+  // Muestra/oculta el HUD táctil según el estado del juego
+  _updateControlsVisibility() {
+    const tc = document.getElementById('touchControls');
+    if (!tc) return;
+    const visible = (this.state === 'playing' || this.state === 'paused');
+    tc.classList.toggle('hidden-controls', !visible);
+  }
+
   // ===== Lifecycle =====
   startGame() {
     // Reset total
@@ -999,6 +2128,9 @@ class Game {
     this.player = new Player(1000 - TILE/2, 1000 - TILE/2);
     this.spawnClosers();
 
+    // Pre-renderizar mundo (terreno + decoración) una sola vez
+    this.prerenderWorld();
+
     // Resetear "visited" para tooltips
     for (const z of this.zones) z.visited = false;
 
@@ -1012,6 +2144,7 @@ class Game {
 
     this.state = 'playing';
     this.lastTime = performance.now();
+    this._updateControlsVisibility();
   }
 
   spawnClosers() {
@@ -1046,6 +2179,7 @@ class Game {
       document.getElementById('pauseScreen').classList.add('hidden');
       this.lastTime = performance.now();
     }
+    this._updateControlsVisibility();
   }
 
   // ===== Interacción al presionar ESPACIO =====
@@ -1121,6 +2255,7 @@ class Game {
     document.getElementById('gameOverStats').textContent =
       `Sobreviviste ${this.dayNumber - 1} días completos. Escapes exitosos: ${this.escapesSuccessful}.`;
     document.getElementById('gameOverScreen').classList.remove('hidden');
+    this._updateControlsVisibility();
   }
   win() {
     this.state = 'win';
@@ -1129,12 +2264,14 @@ class Game {
     document.getElementById('winStats').textContent =
       `Días: ${TOTAL_DAYS} · Bronceado promedio: ${avgTan} · Escapes: ${this.escapesSuccessful}\nSCORE FINAL: ${score}`;
     document.getElementById('winScreen').classList.remove('hidden');
+    this._updateControlsVisibility();
   }
 
   // ===== Minijuego de escape =====
   startEscape(closer) {
     if (this.player.invulnerable > 0) return; // ignorar durante invulnerabilidad
     this.state = 'escape';
+    this._updateControlsVisibility();
     this.activeCloser = closer;
     this.patience = 100;
     this.offerIndex = 0;
@@ -1144,8 +2281,135 @@ class Game {
     document.getElementById('patienceLabel').textContent = 'PACIENCIA: 100';
     document.getElementById('patienceFill').style.width = '100%';
     document.getElementById('escapeScreen').classList.remove('hidden');
+    // Renderizar la closer en pixel art dentro del overlay
+    this._renderEscapeArt();
     // Partícula de "captura" en el mapa
     this.particles.push(new Particle(this.player.x, this.player.y, '❌', COLORS.red, 1));
+  }
+
+  // Dibuja una escena de "sala de ventas" en el canvas del overlay de escape:
+  // mesa con papeles, closer parada al lado, ambiente de presión.
+  _renderEscapeArt() {
+    const cv = document.getElementById('escapeArtCanvas');
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    // Fondo
+    ctx.fillStyle = '#3a3142';
+    ctx.fillRect(0, 0, 180, 160);
+    // Suelo (alfombra)
+    ctx.fillStyle = '#a8723a';
+    ctx.fillRect(0, 100, 180, 60);
+    ctx.fillStyle = '#7a4f1f';
+    ctx.fillRect(0, 100, 180, 3);
+    // Pared
+    ctx.fillStyle = '#4a3a52';
+    ctx.fillRect(0, 0, 180, 50);
+    // Cuadro de "Hard Rock Resort" en la pared (decorativo)
+    ctx.fillStyle = '#1a1614';
+    ctx.fillRect(110, 8, 56, 30);
+    ctx.fillStyle = '#ffd84d';
+    ctx.fillRect(112, 10, 52, 26);
+    ctx.fillStyle = '#1a1614';
+    ctx.font = 'bold 9px monospace';
+    ctx.fillText('RESORT', 116, 22);
+    ctx.fillText('HALL', 122, 32);
+
+    // Mesa con papeles (al frente, lado izquierdo)
+    ctx.fillStyle = '#1a1614';
+    ctx.fillRect(8, 88, 80, 50);
+    ctx.fillStyle = '#5c3317';
+    ctx.fillRect(10, 90, 76, 46);
+    ctx.fillStyle = '#7c4a23';
+    ctx.fillRect(12, 92, 72, 6);
+    // Papeles encima
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(18, 100, 30, 22);
+    ctx.fillStyle = '#ddd';
+    ctx.fillRect(46, 104, 30, 22);
+    // Líneas de texto en papeles
+    ctx.fillStyle = '#888';
+    ctx.fillRect(20, 104, 24, 1);
+    ctx.fillRect(20, 108, 22, 1);
+    ctx.fillRect(20, 112, 20, 1);
+    ctx.fillRect(48, 108, 24, 1);
+    ctx.fillRect(48, 112, 22, 1);
+    // Sello rojo en el papel
+    ctx.fillStyle = '#e74c3c';
+    ctx.beginPath();
+    ctx.arc(28, 116, 4, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 5px monospace';
+    ctx.fillText('!', 27, 118);
+
+    // Bolígrafo
+    ctx.fillStyle = '#1a1614';
+    ctx.fillRect(56, 124, 18, 2);
+    ctx.fillStyle = '#3498db';
+    ctx.fillRect(57, 124, 14, 2);
+    ctx.fillStyle = '#888';
+    ctx.fillRect(72, 124, 2, 2);
+
+    // Closer parada a la derecha (versión grande del sprite)
+    // Tamaño 3x del sprite normal (~72x72)
+    const cx = 110, cy = 50;
+    const scale = 3;
+    const drawScaled = (a, b, c, d, color) => {
+      ctx.fillStyle = color;
+      ctx.fillRect(cx + a * scale, cy + b * scale, c * scale, d * scale);
+    };
+    // Pelo
+    drawScaled(2, 6, 4, 14, COLORS.cHairDark);
+    drawScaled(3, 6, 3, 14, COLORS.cHair);
+    drawScaled(3, 6, 1, 12, COLORS.cHairLight);
+    drawScaled(18, 6, 4, 14, COLORS.cHairDark);
+    drawScaled(18, 6, 3, 14, COLORS.cHair);
+    drawScaled(20, 6, 1, 12, COLORS.cHairLight);
+    drawScaled(7, 1, 10, 1, COLORS.cHairDark);
+    drawScaled(5, 2, 14, 3, COLORS.cHair);
+    drawScaled(7, 2, 10, 1, COLORS.cHairLight);
+    drawScaled(5, 5, 14, 2, COLORS.cHairDark);
+    // Cara
+    drawScaled(6, 7, 12, 6, COLORS.cSkin);
+    drawScaled(15, 7, 3, 6, COLORS.cSkinShadow);
+    // Ojos
+    drawScaled(8, 9, 2, 2, COLORS.cOutline);
+    drawScaled(14, 9, 2, 2, COLORS.cOutline);
+    drawScaled(9, 9, 1, 1, COLORS.white);
+    drawScaled(15, 9, 1, 1, COLORS.white);
+    drawScaled(8, 8, 2, 1, COLORS.cOutline);
+    drawScaled(14, 8, 2, 1, COLORS.cOutline);
+    // Boca abierta hablando (más expresiva en el minijuego)
+    drawScaled(10, 11, 4, 2, COLORS.cLipstick);
+    drawScaled(11, 11, 2, 1, COLORS.white);
+    // Vestido
+    drawScaled(5, 14, 14, 5, COLORS.cDress);
+    drawScaled(15, 14, 4, 5, COLORS.cDressShadow);
+    drawScaled(11, 16, 2, 1, COLORS.yellow);
+    // Brazos
+    drawScaled(3, 14, 2, 5, COLORS.cSkin);
+    drawScaled(19, 14, 2, 4, COLORS.cSkin);
+    // Clipboard grande
+    drawScaled(20, 16, 5, 7, COLORS.cBoardEdge);
+    drawScaled(21, 17, 3, 5, COLORS.cBoard);
+    drawScaled(21, 18, 3, 1, COLORS.cBoardEdge);
+    drawScaled(21, 20, 2, 1, COLORS.cBoardEdge);
+    // Líneas de cabello más largas
+    drawScaled(4, 20, 6, 1, COLORS.cHairDark);
+    drawScaled(16, 20, 4, 1, COLORS.cHairDark);
+
+    // Burbuja de signo "$" sobre la cabeza
+    ctx.fillStyle = '#2ecc71';
+    ctx.beginPath();
+    ctx.arc(cx + 6 * scale, cy - 8, 12, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText('$', cx + 6 * scale - 5, cy - 3);
+    ctx.font = 'normal 9px monospace';
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.fillText('$', cx + 6 * scale - 4, cy - 4);
   }
 
   escapePress() {
@@ -1169,6 +2433,7 @@ class Game {
   escapeSuccess() {
     this.escapesSuccessful++;
     this.state = 'playing';
+    this._updateControlsVisibility();
     document.getElementById('escapeScreen').classList.add('hidden');
     // Aleja al jugador un poco de la closer
     if (this.activeCloser) {
@@ -1307,12 +2572,121 @@ class Game {
     return '';
   }
 
+  // ===== Pre-render del mundo (una sola vez por partida) =====
+  prerenderWorld() {
+    // Canvas offscreen del tamaño del mundo completo
+    if (!this.worldCanvas) {
+      this.worldCanvas = document.createElement('canvas');
+      this.worldCanvas.width = WORLD_W;
+      this.worldCanvas.height = WORLD_H;
+    }
+    const wctx = this.worldCanvas.getContext('2d');
+    wctx.imageSmoothingEnabled = false;
+    wctx.clearRect(0, 0, WORLD_W, WORLD_H);
+    const rng = mulberry32(1337);
+
+    // 1. Tiles base: pasto en todo, camino donde corresponda
+    const isNearPath = (cx, cy) => this._distToAnyPath(cx, cy) < 28;
+    for (let y = 0; y < WORLD_H; y += 16) {
+      for (let x = 0; x < WORLD_W; x += 16) {
+        const cx = x + 8, cy = y + 8;
+        if (isNearPath(cx, cy)) {
+          drawPathTile(wctx, x, y, rng);
+        } else {
+          drawGrassTile(wctx, x, y, rng);
+        }
+      }
+    }
+
+    // 2. Bordes "redondeados" del camino (tiles más oscuros en el borde)
+    for (let y = 0; y < WORLD_H; y += 16) {
+      for (let x = 0; x < WORLD_W; x += 16) {
+        const cx = x + 8, cy = y + 8;
+        const d = this._distToAnyPath(cx, cy);
+        if (d >= 26 && d < 36) {
+          // tonalidad mezcla
+          wctx.fillStyle = COLORS.grassDark;
+          wctx.fillRect(x, y, 1, 1);
+          wctx.fillRect(x + 14, y + 14, 1, 1);
+        }
+      }
+    }
+
+    // 3. Zonas (encima del pasto / caminos)
+    for (const z of this.zones) z.drawToWorld(wctx, rng);
+
+    // 4. Decoración (árboles, arbustos, rocas) fuera de zonas/caminos
+    this._scatterDecorations(wctx, rng);
+  }
+
+  // Distancia del punto (px, py) al segmento de camino más cercano
+  _distToAnyPath(px, py) {
+    const room = this.zones.find(z => z.type === 'room');
+    const rcx = room.x + room.w/2, rcy = room.y + room.h/2;
+    let minD = Infinity;
+    for (const z of this.zones) {
+      if (z.type === 'room') continue;
+      const zcx = z.x + z.w/2, zcy = z.y + z.h/2;
+      // proyección sobre segmento
+      const Ax = px - rcx, Ay = py - rcy;
+      const Bx = zcx - rcx, By = zcy - rcy;
+      const lenSq = Bx*Bx + By*By;
+      let t = lenSq > 0 ? (Ax*Bx + Ay*By) / lenSq : 0;
+      t = clamp(t, 0, 1);
+      const cx = rcx + t * Bx, cy = rcy + t * By;
+      const d = Math.hypot(px - cx, py - cy);
+      if (d < minD) minD = d;
+    }
+    return minD;
+  }
+
+  // Coloca árboles, arbustos y rocas en zonas verdes
+  _scatterDecorations(wctx, rng) {
+    const forbidden = this.zones.map(z => ({
+      x: z.x - 24, y: z.y - 24, w: z.w + 48, h: z.h + 48
+    }));
+    const isBlocked = (px, py) => {
+      for (const f of forbidden) {
+        if (px >= f.x && px <= f.x+f.w && py >= f.y && py <= f.y+f.h) return true;
+      }
+      return this._distToAnyPath(px, py) < 36;
+    };
+    const placed = []; // posiciones de elementos ya colocados (para evitar superposición)
+
+    const trySpawn = (count, minDist, maxTries, spawnFn) => {
+      let tries = 0, made = 0;
+      while (made < count && tries < maxTries) {
+        tries++;
+        const x = Math.floor(rng() * (WORLD_W - 40)) + 4;
+        const y = Math.floor(rng() * (WORLD_H - 50)) + 4;
+        const cx = x + 16, cy = y + 22;
+        if (isBlocked(cx, cy)) continue;
+        let close = false;
+        for (const p of placed) {
+          if (Math.hypot(p.x - x, p.y - y) < minDist) { close = true; break; }
+        }
+        if (close) continue;
+        placed.push({ x, y, spawn: spawnFn });
+        made++;
+      }
+    };
+
+    // Árboles (más densos en los bordes del mundo, menos en el centro)
+    trySpawn(80, 50, 2500, drawTree);
+    // Arbustos
+    trySpawn(100, 28, 2500, (ctx, x, y) => drawBush(ctx, x, y + 8));
+    // Rocas
+    trySpawn(35, 30, 1500, (ctx, x, y) => drawRock(ctx, x, y + 12));
+
+    // Ordenar por Y para que objetos más abajo se dibujen al final
+    // (preserva orden visual top-down)
+    placed.sort((a, b) => a.y - b.y);
+    for (const p of placed) p.spawn(wctx, p.x, p.y);
+  }
+
   // ===== Render =====
   render() {
     const ctx = this.ctx;
-    // Fondo
-    ctx.fillStyle = COLORS.grass;
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
     // Cámara siguiendo al jugador
     let camX = 0, camY = 0;
@@ -1321,119 +2695,275 @@ class Game {
       camY = clamp(this.player.y - CANVAS_H/2 + this.player.h/2, 0, WORLD_H - CANVAS_H);
     }
 
-    // Patrón de pasto (cuadrícula sutil)
-    ctx.fillStyle = COLORS.grassDark;
-    const gridSize = 80;
-    const startX = Math.floor(camX / gridSize) * gridSize - camX;
-    const startY = Math.floor(camY / gridSize) * gridSize - camY;
-    for (let gx = startX; gx < CANVAS_W; gx += gridSize) {
-      for (let gy = startY; gy < CANVAS_H; gy += gridSize) {
-        if (((gx + gy) / gridSize) % 2 === 0) {
-          ctx.fillRect(gx, gy, gridSize, gridSize);
-        }
-      }
+    // Fondo: blit del slice visible del mundo pre-renderizado
+    if (this.worldCanvas) {
+      // Si el canvas es más grande que el mundo en un eje, rellenamos primero con pasto
+      ctx.fillStyle = COLORS.grass;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      const sx = clamp(camX, 0, WORLD_W);
+      const sy = clamp(camY, 0, WORLD_H);
+      const sw = Math.min(CANVAS_W, WORLD_W - sx);
+      const sh = Math.min(CANVAS_H, WORLD_H - sy);
+      ctx.drawImage(this.worldCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+    } else {
+      ctx.fillStyle = COLORS.grass;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
     }
-
-    // Caminos (líneas conectando zonas a la habitación central)
-    this.drawPaths(ctx, camX, camY);
-
-    // Zonas
-    for (const z of this.zones) z.draw(ctx, camX, camY);
 
     // Closers (solo si estamos jugando)
     if (this.player) {
-      for (const c of this.closers) c.draw(ctx, camX, camY);
-      // Jugador
-      this.player.draw(ctx, camX, camY);
+      // Ordenar entidades por Y para depth sorting
+      const entities = [...this.closers, this.player];
+      entities.sort((a, b) => (a.y + a.h) - (b.y + b.h));
+      for (const e of entities) e.draw(ctx, camX, camY);
     }
 
-    // Partículas
+    // Partículas (siempre encima de entidades)
     for (const p of this.particles) p.draw(ctx, camX, camY);
 
     // HUD
     this.drawHUD(ctx);
   }
 
-  drawPaths(ctx, camX, camY) {
-    // Camino desde la habitación (centro) a cada zona
-    const room = this.zones.find(z => z.type === 'room');
-    const roomCx = room.x + room.w/2;
-    const roomCy = room.y + room.h/2;
-    ctx.strokeStyle = COLORS.path;
-    ctx.lineWidth = 30;
-    ctx.lineCap = 'round';
-    for (const z of this.zones) {
-      if (z.type === 'room') continue;
-      const zcx = z.x + z.w/2;
-      const zcy = z.y + z.h/2;
-      ctx.beginPath();
-      ctx.moveTo(roomCx - camX, roomCy - camY);
-      ctx.lineTo(zcx - camX, zcy - camY);
-      ctx.stroke();
-    }
-    // Línea más oscura encima para detalle
-    ctx.strokeStyle = COLORS.pathDark;
-    ctx.lineWidth = 4;
-    ctx.setLineDash([6, 10]);
-    for (const z of this.zones) {
-      if (z.type === 'room') continue;
-      const zcx = z.x + z.w/2;
-      const zcy = z.y + z.h/2;
-      ctx.beginPath();
-      ctx.moveTo(roomCx - camX, roomCy - camY);
-      ctx.lineTo(zcx - camX, zcy - camY);
-      ctx.stroke();
-    }
-    ctx.setLineDash([]);
-  }
-
+  // ===== HUD profesional (estilo GBA Zelda / Pokemon) =====
   drawHUD(ctx) {
     if (!this.player) return;
-    // Fondo del HUD
-    ctx.fillStyle = 'rgba(0,0,0,0.65)';
-    ctx.fillRect(0, 0, CANVAS_W, 60);
 
-    // Barras
-    this.drawBar(ctx, 10, 8, 'ENERGÍA', this.energy, '#3498db');
-    this.drawBar(ctx, 10, 28, 'HAMBRE',  this.hunger, '#e67e22');
-    this.drawBar(ctx, 10, 48, 'BRONCEADO', this.tan,  '#f39c12');
+    // Panel izquierdo: stats con iconos
+    const panelX = 8, panelY = 8;
+    const panelW = 220, panelH = 78;
+    this._drawPanel(ctx, panelX, panelY, panelW, panelH);
 
-    // Día (arriba derecha)
+    // 3 barras con iconos
+    this._drawStatBar(ctx, panelX + 8,  panelY + 8,  'energy', this.energy);
+    this._drawStatBar(ctx, panelX + 8,  panelY + 30, 'hunger', this.hunger);
+    this._drawStatBar(ctx, panelX + 8,  panelY + 52, 'tan',    this.tan);
+
+    // Panel derecho: día + tiempo + escapes
+    const rPanelW = 150, rPanelH = 78;
+    const rPanelX = CANVAS_W - rPanelW - 8, rPanelY = 8;
+    this._drawPanel(ctx, rPanelX, rPanelY, rPanelW, rPanelH);
+
+    // Título "DÍA X/7"
+    ctx.fillStyle = COLORS.yellow;
+    ctx.font = 'bold 22px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`DÍA ${this.dayNumber}/${TOTAL_DAYS}`, rPanelX + rPanelW/2, rPanelY + 24);
+    // Sub-info
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 16px monospace';
-    ctx.textAlign = 'right';
-    ctx.fillText(`Día ${this.dayNumber}/${TOTAL_DAYS}`, CANVAS_W - 12, 22);
-    ctx.font = '12px monospace';
-    ctx.fillText(`Tiempo: ${Math.ceil(this.dayTimeLeft)}s`, CANVAS_W - 12, 40);
-    ctx.fillText(`Escapes: ${this.escapesSuccessful}`, CANVAS_W - 12, 56);
+    ctx.font = 'bold 12px monospace';
+    // Reloj
+    this._drawClockIcon(ctx, rPanelX + 14, rPanelY + 36);
+    ctx.fillText(`${Math.ceil(this.dayTimeLeft)}s`, rPanelX + 30, rPanelY + 46);
+    // Escapes
+    this._drawExitIcon(ctx, rPanelX + 80, rPanelY + 36);
+    ctx.fillText(`x${this.escapesSuccessful}`, rPanelX + 96, rPanelY + 46);
+    // Closers count
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${this.closers.length} closers en el resort`, rPanelX + rPanelW/2, rPanelY + 67);
     ctx.textAlign = 'left';
 
-    // Indicador de invulnerabilidad
+    // Indicador de invulnerabilidad (centro pantalla, abajo del HUD)
     if (this.player.invulnerable > 0) {
-      ctx.fillStyle = '#2ecc71';
-      ctx.font = 'bold 12px monospace';
+      const ix = CANVAS_W/2, iy = panelY + panelH + 18;
+      // Fondo
+      ctx.fillStyle = 'rgba(46,204,113,0.85)';
+      ctx.fillRect(ix - 90, iy - 14, 180, 24);
+      ctx.fillStyle = COLORS.pOutline;
+      ctx.fillRect(ix - 91, iy - 15, 182, 1);
+      ctx.fillRect(ix - 91, iy + 10, 182, 1);
+      // Texto
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 13px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(`✨ INVULNERABLE: ${this.player.invulnerable.toFixed(1)}s`, CANVAS_W/2, 75);
+      ctx.fillText(`✨ INVULNERABLE ${this.player.invulnerable.toFixed(1)}s ✨`, ix, iy + 3);
       ctx.textAlign = 'left';
+    }
+
+    // Banner de zona segura (cuando estés en spa/habitación)
+    if (this.player && this.state === 'playing') {
+      const cx = this.player.x + this.player.w/2;
+      const cy = this.player.y + this.player.h/2;
+      let inSafe = null;
+      for (const z of this.zones) {
+        if (z.safe && z.contains(cx, cy)) { inSafe = z; break; }
+      }
+      if (inSafe) {
+        ctx.fillStyle = 'rgba(46,204,113,0.85)';
+        const txt = '🛡️ ZONA SEGURA';
+        ctx.font = 'bold 14px monospace';
+        const tw = ctx.measureText(txt).width;
+        ctx.fillRect(CANVAS_W/2 - tw/2 - 12, CANVAS_H - 60, tw + 24, 26);
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText(txt, CANVAS_W/2, CANVAS_H - 42);
+        ctx.textAlign = 'left';
+      }
     }
   }
 
-  drawBar(ctx, x, y, label, value, color) {
-    // Label
+  // Panel con borde estilo retro (marrón con borde dorado/negro)
+  _drawPanel(ctx, x, y, w, h) {
+    // Sombra externa
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(x + 3, y + 3, w, h);
+    // Borde negro exterior
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.fillRect(x, y, w, h);
+    // Borde dorado
+    ctx.fillStyle = '#d4a060';
+    ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+    // Borde sombra interior
+    ctx.fillStyle = '#8a6638';
+    ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+    // Fondo principal
+    ctx.fillStyle = 'rgba(20, 25, 35, 0.92)';
+    ctx.fillRect(x + 3, y + 3, w - 6, h - 6);
+    // Reflejo arriba
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillRect(x + 3, y + 3, w - 6, 4);
+  }
+
+  // Barra con icono custom (energy/hunger/tan)
+  _drawStatBar(ctx, x, y, type, value) {
+    // Dibujar icono 16x16 a la izquierda
+    this._drawStatIcon(ctx, x, y, type);
+    // Barra a la derecha del icono
+    const bx = x + 22, by = y + 2, bw = 160, bh = 12;
+    // Marco de la barra
+    ctx.fillStyle = '#000';
+    ctx.fillRect(bx - 1, by - 1, bw + 2, bh + 2);
+    ctx.fillStyle = '#3a3a3a';
+    ctx.fillRect(bx, by, bw, bh);
+    // Color del fill por tipo
+    const colors = {
+      energy: ['#5dade2', '#3498db', '#1d6fa5'],
+      hunger: ['#f39c12', '#e67e22', '#a85a10'],
+      tan:    ['#ffd84d', '#f1c40f', '#b89800']
+    };
+    const [cL, cM, cD] = colors[type];
+    const fill = clamp((bw - 2) * (value/100), 0, bw - 2);
+    // Degradado vertical simulado
+    ctx.fillStyle = cD;
+    ctx.fillRect(bx + 1, by + 1, fill, bh - 2);
+    ctx.fillStyle = cM;
+    ctx.fillRect(bx + 1, by + 1, fill, bh - 4);
+    ctx.fillStyle = cL;
+    ctx.fillRect(bx + 1, by + 2, fill, 2);
+    // Valor a la derecha
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 11px monospace';
-    ctx.fillText(label, x, y + 11);
-    // Background bar
-    const bx = x + 90, bw = 150, bh = 12;
-    ctx.fillStyle = '#222';
-    ctx.fillRect(bx, y + 1, bw, bh);
-    // Fill
-    ctx.fillStyle = color;
-    ctx.fillRect(bx + 1, y + 2, (bw - 2) * (value/100), bh - 2);
-    // Value text
+    ctx.fillText(`${Math.floor(value)}`, bx + bw + 5, by + 10);
+    // Aviso rojo si <= 20
+    if (value <= 20) {
+      ctx.fillStyle = COLORS.red;
+      ctx.font = 'bold 14px monospace';
+      const blink = Math.floor(performance.now() / 300) % 2 === 0;
+      if (blink) ctx.fillText('!', bx + bw + 30, by + 11);
+    }
+  }
+
+  // Iconos custom 16x16 para cada stat
+  _drawStatIcon(ctx, x, y, type) {
+    if (type === 'energy') {
+      // Rayo amarillo con outline
+      const R = (a,b,c,d,col) => { ctx.fillStyle = col; ctx.fillRect(x+a,y+b,c,d); };
+      R(0, 0, 16, 16, 'rgba(0,0,0,0.4)'); // fondo redondeado simulado
+      R(1, 1, 14, 14, '#1d3a52');
+      // Rayo
+      R(9, 2, 4, 2, '#000');
+      R(7, 4, 6, 2, '#000');
+      R(5, 6, 6, 2, '#000');
+      R(7, 8, 4, 2, '#000');
+      R(5, 10, 6, 2, '#000');
+      R(3, 12, 6, 2, '#000');
+      // Color amarillo encima
+      R(9, 2, 3, 1, '#fff39b');
+      R(8, 3, 4, 1, '#ffd84d');
+      R(7, 4, 5, 1, '#ffd84d');
+      R(6, 5, 5, 1, '#f1c40f');
+      R(5, 6, 5, 1, '#f1c40f');
+      R(5, 7, 4, 1, '#b89800');
+      R(7, 8, 3, 1, '#ffd84d');
+      R(6, 9, 3, 1, '#f1c40f');
+      R(5, 10, 4, 1, '#ffd84d');
+      R(4, 11, 4, 1, '#f1c40f');
+      R(3, 12, 3, 1, '#b89800');
+    } else if (type === 'hunger') {
+      // Tenedor + cuchara cruzados o pollo, mejor: un drumstick (pierna de pollo)
+      const R = (a,b,c,d,col) => { ctx.fillStyle = col; ctx.fillRect(x+a,y+b,c,d); };
+      R(1, 1, 14, 14, '#2a1810');
+      // Hueso/mango
+      R(2, 11, 4, 2, '#f4dcb0');
+      R(2, 11, 4, 1, '#e8c890');
+      R(2, 13, 4, 1, '#a87836');
+      R(3, 10, 2, 1, '#f4dcb0');
+      R(5, 9, 2, 1, '#a87836');
+      // Carne dorada
+      R(6, 5, 8, 8, '#8b3d0c');
+      R(6, 4, 8, 1, '#5a280a');
+      R(7, 4, 6, 1, '#a8501a');
+      R(8, 3, 4, 1, '#e67e22');
+      R(13, 6, 1, 6, '#5a280a');
+      R(7, 12, 6, 1, '#3a1a08');
+      // Brillo
+      R(8, 5, 2, 1, '#f4dcb0');
+      R(10, 7, 2, 1, '#ffa040');
+    } else if (type === 'tan') {
+      // Sol
+      const R = (a,b,c,d,col) => { ctx.fillStyle = col; ctx.fillRect(x+a,y+b,c,d); };
+      R(1, 1, 14, 14, '#3a2a4a');
+      // Rayos
+      ctx.fillStyle = '#ffd84d';
+      ctx.fillRect(x + 7, y + 1, 2, 2);
+      ctx.fillRect(x + 7, y + 13, 2, 2);
+      ctx.fillRect(x + 1, y + 7, 2, 2);
+      ctx.fillRect(x + 13, y + 7, 2, 2);
+      ctx.fillRect(x + 3, y + 3, 2, 2);
+      ctx.fillRect(x + 11, y + 3, 2, 2);
+      ctx.fillRect(x + 3, y + 11, 2, 2);
+      ctx.fillRect(x + 11, y + 11, 2, 2);
+      // Sol central
+      R(5, 5, 6, 6, '#000');
+      R(5, 5, 6, 6, '#f1c40f');
+      R(6, 5, 4, 1, '#fff39b');
+      R(5, 6, 1, 4, '#fff39b');
+      R(7, 7, 2, 2, '#fff');
+      R(10, 9, 1, 1, '#b89800');
+      R(6, 10, 4, 1, '#b89800');
+    }
+  }
+
+  _drawClockIcon(ctx, x, y) {
+    // Reloj redondo simple (12x12)
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.beginPath(); ctx.arc(x + 6, y + 6, 6, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 10px monospace';
-    ctx.fillText(`${Math.floor(value)}`, bx + bw + 6, y + 11);
+    ctx.beginPath(); ctx.arc(x + 6, y + 6, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.fillRect(x + 5, y + 2, 2, 4); // manecilla minutos arriba
+    ctx.fillRect(x + 6, y + 6, 3, 1); // manecilla horas derecha
+    ctx.fillRect(x + 5, y + 5, 2, 2); // centro
+  }
+
+  _drawExitIcon(ctx, x, y) {
+    // Puerta con flecha de salida
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.fillRect(x, y, 12, 12);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x + 1, y + 1, 10, 10);
+    ctx.fillStyle = '#2ecc71';
+    ctx.fillRect(x + 2, y + 2, 6, 8);
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.fillRect(x + 7, y + 5, 1, 2); // pomo
+    // Flecha hacia derecha
+    ctx.fillStyle = COLORS.yellow;
+    ctx.fillRect(x + 7, y + 5, 4, 2);
+    ctx.fillRect(x + 9, y + 4, 1, 1);
+    ctx.fillRect(x + 10, y + 4, 1, 4);
+    ctx.fillRect(x + 9, y + 7, 1, 1);
   }
 
   // ===== Game loop =====
@@ -1457,6 +2987,7 @@ class Game {
 // Arranque
 // ============================================================
 const game = new Game();
+window.game = game; // accesible para inspección y tests
 game.start();
 </script>
 </body>
