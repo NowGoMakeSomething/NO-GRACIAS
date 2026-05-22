@@ -1408,6 +1408,18 @@ class Player {
       if (this.walkTimer >= 0.2) {
         this.walkFrame = 1 - this.walkFrame;
         this.walkTimer = 0;
+        // Emitir partícula de polvo a los pies cada vez que cambia el frame
+        this.dustTimer = (this.dustTimer || 0) + 1;
+        if (game && game.particles) {
+          game.particles.push(new Particle(
+            this.x + this.w/2 + rand(-3, 3),
+            this.y + this.h - 1,
+            null,
+            'rgba(200,180,140,0.6)',
+            0.5,
+            'dust'
+          ));
+        }
       }
     } else {
       this.walkFrame = 0;
@@ -1763,6 +1775,17 @@ class Closer {
     if (this.walkTimer >= 0.2) {
       this.walkFrame = 1 - this.walkFrame;
       this.walkTimer = 0;
+      // Polvo cuando persigue (corre)
+      if (this.state === 'chase' && game && game.particles) {
+        game.particles.push(new Particle(
+          this.x + this.w/2 + rand(-3, 3),
+          this.y + this.h - 1,
+          null,
+          'rgba(231,76,60,0.5)', // polvo rojizo de "urgencia"
+          0.4,
+          'dust'
+        ));
+      }
     }
 
     // Timer de frase
@@ -1773,6 +1796,23 @@ class Closer {
   // clipboard en la mano, sonrisa marca registrada.
   draw(ctx, camX, camY) {
     const x = Math.round(this.x - camX), y = Math.round(this.y - camY);
+
+    // Círculo de "detección" pulsante cuando persigue (debajo de la closer)
+    if (this.state === 'chase') {
+      const t = performance.now() / 1000;
+      const pulse = 1 + Math.sin(t * 4) * 0.15;
+      const r = 30 * pulse;
+      ctx.strokeStyle = 'rgba(231,76,60,0.5)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(x + 12, y + 23, r, r/2.5, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(231,76,60,0.25)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(x + 12, y + 23, r + 6, (r+6)/2.5, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
 
     // Sombra
     ctx.fillStyle = COLORS.shadow;
@@ -1935,29 +1975,49 @@ class Closer {
 }
 
 // ============================================================
-// Partícula (efectos visuales: ✨ y ❌)
+// Partículas: dos variantes
+//   - 'text': muestra un emoji/texto (✨, ❌). Sube y desaparece.
+//   - 'dust': pequeño círculo de polvo que se expande y desvanece.
 // ============================================================
 class Particle {
-  constructor(x, y, symbol, color, life=1.5) {
+  constructor(x, y, symbol, color, life=1.5, type='text') {
     this.x = x; this.y = y;
     this.symbol = symbol;
     this.color = color;
     this.life = life;
     this.maxLife = life;
-    this.vy = -30; // sube
-    this.vx = rand(-15, 15);
+    this.type = type;
+    if (type === 'dust') {
+      this.vx = rand(-8, 8);
+      this.vy = rand(-15, -5);
+      this.radius = rand(2, 4);
+    } else {
+      this.vy = -30;
+      this.vx = rand(-15, 15);
+    }
   }
   update(dt) {
     this.x += this.vx * dt;
     this.y += this.vy * dt;
+    if (this.type === 'dust') {
+      this.vy += 30 * dt; // un poco de gravedad
+      this.radius += 4 * dt; // crecer
+    }
     this.life -= dt;
   }
   draw(ctx, camX, camY) {
     const alpha = clamp(this.life / this.maxLife, 0, 1);
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = this.color;
-    ctx.font = 'bold 20px monospace';
-    ctx.fillText(this.symbol, this.x - camX, this.y - camY);
+    if (this.type === 'dust') {
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x - camX, this.y - camY, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = this.color;
+      ctx.font = 'bold 20px monospace';
+      ctx.fillText(this.symbol, this.x - camX, this.y - camY);
+    }
     ctx.globalAlpha = 1;
   }
 }
@@ -2802,10 +2862,31 @@ class Game {
     // HUD
     this.drawHUD(ctx);
 
+    // Vignette sutil en las esquinas para dar profundidad
+    if (this.state === 'playing' || this.state === 'paused' || this.state === 'escape') {
+      this._drawVignette(ctx);
+    }
+
     // Minimapa (solo durante gameplay)
     if (this.state === 'playing' || this.state === 'paused') {
       this._drawMinimap(ctx);
     }
+  }
+
+  // Vignette: gradiente radial oscuro en las esquinas
+  _drawVignette(ctx) {
+    if (!this._vignetteCache || this._vignetteCache.w !== CANVAS_W || this._vignetteCache.h !== CANVAS_H) {
+      // Cachear el gradient para no recrearlo cada frame
+      const grad = ctx.createRadialGradient(
+        CANVAS_W/2, CANVAS_H/2, Math.min(CANVAS_W, CANVAS_H) * 0.35,
+        CANVAS_W/2, CANVAS_H/2, Math.max(CANVAS_W, CANVAS_H) * 0.75
+      );
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.5)');
+      this._vignetteCache = { w: CANVAS_W, h: CANVAS_H, grad };
+    }
+    ctx.fillStyle = this._vignetteCache.grad;
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
   }
 
   // Dibuja brillitos animados sobre cualquier tile de agua visible
