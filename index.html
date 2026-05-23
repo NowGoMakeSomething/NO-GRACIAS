@@ -2961,27 +2961,40 @@ class Game {
 
     ctx.font = 'bold 11px monospace';
     const tw = ctx.measureText(label).width;
-    const bx = px - tw/2 - 6;
-    const by = py - 16 + bob;
+    const bw = Math.ceil(tw) + 12;
+    const bh = 18;
+    const bx = Math.round(px - bw/2);
+    const by = Math.round(py - 16 + bob);
     // Sombra
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(bx + 2, by + 2, tw + 12, 18);
-    // Fondo amarillo
-    ctx.fillStyle = COLORS.yellow;
-    ctx.fillRect(bx, by, tw + 12, 18);
-    // Bordes
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(bx + 2, by + 3, bw, bh);
+    // Outline negro exterior
     ctx.fillStyle = COLORS.pOutline;
-    ctx.fillRect(bx, by, tw + 12, 1);
-    ctx.fillRect(bx, by + 17, tw + 12, 1);
-    ctx.fillRect(bx, by, 1, 18);
-    ctx.fillRect(bx + tw + 11, by, 1, 18);
-    // Pico
+    ctx.fillRect(bx - 1, by - 1, bw + 2, bh + 2);
+    // Fondo amarillo (highlight)
+    ctx.fillStyle = '#ffe066';
+    ctx.fillRect(bx, by, bw, bh);
+    // Bevel oscuro inferior/derecho
+    ctx.fillStyle = '#c9a83a';
+    ctx.fillRect(bx, by + bh - 2, bw, 2);
+    ctx.fillRect(bx + bw - 2, by, 2, bh);
+    // Highlight superior
+    ctx.fillStyle = '#fff39b';
+    ctx.fillRect(bx + 1, by + 1, bw - 3, 1);
+    // Pico hacia abajo con outline
+    ctx.fillStyle = COLORS.pOutline;
     ctx.beginPath();
-    ctx.moveTo(px - 4, by + 18);
-    ctx.lineTo(px, by + 24);
-    ctx.lineTo(px + 4, by + 18);
+    ctx.moveTo(px - 5, by + bh - 1);
+    ctx.lineTo(px, by + bh + 6);
+    ctx.lineTo(px + 5, by + bh - 1);
     ctx.closePath();
-    ctx.fillStyle = COLORS.yellow;
+    ctx.fill();
+    ctx.fillStyle = '#ffe066';
+    ctx.beginPath();
+    ctx.moveTo(px - 3, by + bh);
+    ctx.lineTo(px, by + bh + 4);
+    ctx.lineTo(px + 3, by + bh);
+    ctx.closePath();
     ctx.fill();
     // Texto
     ctx.fillStyle = COLORS.pOutline;
@@ -2992,15 +3005,29 @@ class Game {
   // closers como puntos rojos. En la esquina superior derecha bajo el panel.
   _drawMinimap(ctx) {
     const mapSize = 130;
-    const mapX = CANVAS_W - mapSize - 12;
-    const mapY = 96; // debajo del panel derecho
+    const pad = 6;
+    const headerH = 16;
+    const panelW = mapSize + pad * 2;
+    const panelH = mapSize + headerH + pad * 2;
+    const panelX = CANVAS_W - panelW - 8;
+    const panelY = 94;
+    // Marco unificado con el resto del HUD
+    this._drawPanel(ctx, panelX, panelY, panelW, panelH);
+    // Tira de header dorada con "MAPA"
+    ctx.fillStyle = '#d4a060';
+    ctx.fillRect(panelX + 5, panelY + 5, panelW - 10, headerH - 2);
+    ctx.fillStyle = '#8a6638';
+    ctx.fillRect(panelX + 5, panelY + headerH + 2, panelW - 10, 1);
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('MAPA', panelX + panelW/2, panelY + 16);
+    ctx.textAlign = 'left';
+
+    const mapX = panelX + pad;
+    const mapY = panelY + headerH + pad;
     const scale = mapSize / WORLD_W;
 
-    // Panel de fondo
-    ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    ctx.fillRect(mapX - 2, mapY - 2, mapSize + 4, mapSize + 4);
-    ctx.fillStyle = '#d4a060';
-    ctx.fillRect(mapX - 1, mapY - 1, mapSize + 2, mapSize + 2);
     // Fondo del mapa (verde tenue)
     ctx.fillStyle = COLORS.grass;
     ctx.fillRect(mapX, mapY, mapSize, mapSize);
@@ -3069,12 +3096,6 @@ class Game {
       ctx.fillRect(sx - 2, sy - 2, 4, 4);
     }
 
-    // Label
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 9px monospace';
-    ctx.textAlign = 'right';
-    ctx.fillText('MAPA', mapX + mapSize - 4, mapY - 6);
-    ctx.textAlign = 'left';
   }
 
   // ===== HUD profesional (estilo GBA Zelda / Pokemon) =====
@@ -3119,19 +3140,9 @@ class Game {
 
     // Indicador de invulnerabilidad (centro pantalla, abajo del HUD)
     if (this.player.invulnerable > 0) {
-      const ix = CANVAS_W/2, iy = panelY + panelH + 18;
-      // Fondo
-      ctx.fillStyle = 'rgba(46,204,113,0.85)';
-      ctx.fillRect(ix - 90, iy - 14, 180, 24);
-      ctx.fillStyle = COLORS.pOutline;
-      ctx.fillRect(ix - 91, iy - 15, 182, 1);
-      ctx.fillRect(ix - 91, iy + 10, 182, 1);
-      // Texto
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 13px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`✨ INVULNERABLE ${this.player.invulnerable.toFixed(1)}s ✨`, ix, iy + 3);
-      ctx.textAlign = 'left';
+      const ix = CANVAS_W/2, iy = panelY + panelH + 22;
+      const txt = `✨ INVULNERABLE ${this.player.invulnerable.toFixed(1)}s ✨`;
+      this._drawBanner(ctx, txt, ix, iy, 'rgba(46,204,113,0.92)');
     }
 
     // Banner de zona segura (cuando estés en spa/habitación)
@@ -3143,39 +3154,91 @@ class Game {
         if (z.safe && z.contains(cx, cy)) { inSafe = z; break; }
       }
       if (inSafe) {
-        ctx.fillStyle = 'rgba(46,204,113,0.85)';
-        const txt = '🛡️ ZONA SEGURA';
-        ctx.font = 'bold 14px monospace';
-        const tw = ctx.measureText(txt).width;
-        ctx.fillRect(CANVAS_W/2 - tw/2 - 12, CANVAS_H - 60, tw + 24, 26);
-        ctx.fillStyle = '#fff';
-        ctx.textAlign = 'center';
-        ctx.fillText(txt, CANVAS_W/2, CANVAS_H - 42);
-        ctx.textAlign = 'left';
+        this._drawBanner(ctx, '🛡️ ZONA SEGURA', CANVAS_W/2, CANVAS_H - 50, 'rgba(46,204,113,0.92)');
       }
     }
   }
 
-  // Panel con borde estilo retro (marrón con borde dorado/negro)
+  // Panel con borde estilo retro (marco dorado biselado con remaches en esquinas)
   _drawPanel(ctx, x, y, w, h) {
-    // Sombra externa
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    // Sombra externa suave (dos capas)
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    ctx.fillRect(x + 5, y + 5, w, h);
+    ctx.fillStyle = 'rgba(0,0,0,0.50)';
     ctx.fillRect(x + 3, y + 3, w, h);
-    // Borde negro exterior
+    // Outline negro exterior (1px)
     ctx.fillStyle = COLORS.pOutline;
     ctx.fillRect(x, y, w, h);
-    // Borde dorado
-    ctx.fillStyle = '#d4a060';
+    // Marco dorado claro (top-left)
+    ctx.fillStyle = '#e8b870';
     ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
-    // Borde sombra interior
+    // Bevel dorado oscuro (bottom-right) para sensación 3D
     ctx.fillStyle = '#8a6638';
-    ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
-    // Fondo principal
-    ctx.fillStyle = 'rgba(20, 25, 35, 0.92)';
+    ctx.fillRect(x + 1, y + h - 3, w - 2, 2);
+    ctx.fillRect(x + w - 3, y + 1, 2, h - 2);
+    // Línea negra interior (separa marco del contenido)
+    ctx.fillStyle = COLORS.pOutline;
     ctx.fillRect(x + 3, y + 3, w - 6, h - 6);
-    // Reflejo arriba
-    ctx.fillStyle = 'rgba(255,255,255,0.06)';
-    ctx.fillRect(x + 3, y + 3, w - 6, 4);
+    // Fondo principal
+    ctx.fillStyle = 'rgba(20, 25, 35, 0.94)';
+    ctx.fillRect(x + 4, y + 4, w - 8, h - 8);
+    // Highlight superior (reflejo)
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    ctx.fillRect(x + 4, y + 4, w - 8, 2);
+    // Sombra inferior (bevel interno)
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.fillRect(x + 4, y + h - 6, w - 8, 2);
+    // Remaches en las 4 esquinas
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.fillRect(x + 2, y + 2, 2, 2);
+    ctx.fillRect(x + w - 4, y + 2, 2, 2);
+    ctx.fillRect(x + 2, y + h - 4, 2, 2);
+    ctx.fillRect(x + w - 4, y + h - 4, 2, 2);
+  }
+
+  // Banner estrecho con el mismo estilo de marco que los paneles
+  // (centrado en cx,cy; texto blanco, color de fondo variable)
+  _drawBanner(ctx, text, cx, cy, bgColor) {
+    ctx.font = 'bold 14px monospace';
+    const tw = ctx.measureText(text).width;
+    const w = Math.ceil(tw) + 32;
+    const h = 30;
+    const x = Math.round(cx - w/2);
+    const y = Math.round(cy - h/2);
+    // Sombra
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(x + 3, y + 3, w, h);
+    // Outline negro
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.fillRect(x, y, w, h);
+    // Marco dorado claro + bevel oscuro
+    ctx.fillStyle = '#e8b870';
+    ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+    ctx.fillStyle = '#8a6638';
+    ctx.fillRect(x + 1, y + h - 3, w - 2, 2);
+    ctx.fillRect(x + w - 3, y + 1, 2, h - 2);
+    // Línea negra interior
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.fillRect(x + 3, y + 3, w - 6, h - 6);
+    // Fondo de color (semi-transparente para teñir)
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(x + 4, y + 4, w - 8, h - 8);
+    // Highlight + bevel interior
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fillRect(x + 4, y + 4, w - 8, 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    ctx.fillRect(x + 4, y + h - 6, w - 8, 2);
+    // Remaches
+    ctx.fillStyle = COLORS.pOutline;
+    ctx.fillRect(x + 2, y + 2, 2, 2);
+    ctx.fillRect(x + w - 4, y + 2, 2, 2);
+    ctx.fillRect(x + 2, y + h - 4, 2, 2);
+    ctx.fillRect(x + w - 4, y + h - 4, 2, 2);
+    // Texto centrado
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText(text, cx, y + 20);
+    ctx.textAlign = 'left';
   }
 
   // Barra con icono custom (energy/hunger/tan)
