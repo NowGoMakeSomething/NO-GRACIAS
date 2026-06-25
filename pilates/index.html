@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f3ede2">
+<title>Tu progresión · Pilates Reformer</title>
+<style>
+  :root{
+    --bg:#f3ede2;            /* crema de fondo */
+    --card:#ffffff;
+    --ink:#3a3a3a;          /* texto principal */
+    --soft:#7c7368;         /* texto secundario */
+    --mint:#a9d8c6;         /* capacidad */
+    --mint-deep:#5fae93;
+    --coral:#f0a9b4;        /* demanda */
+    --coral-deep:#e07f8f;
+    --line:#e6ddcf;
+    --shadow:0 14px 34px rgba(120,100,80,.16);
+    --radius:22px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #fbf7ef 0%, transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+
+  /* ===== Estructura del "deck" ===== */
+  #deck{position:relative;height:100dvh;width:100%;overflow:hidden}
+  .slide{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:flex-start;
+    padding:max(22px,env(safe-area-inset-top)) 20px 110px;
+    opacity:0;transform:translateY(14px) scale(.985);
+    transition:opacity .45s ease, transform .45s ease;
+    pointer-events:none;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .inner{width:100%;max-width:520px;margin:0 auto}
+
+  /* ===== Encabezado de marca ===== */
+  .brand{
+    display:flex;align-items:center;gap:9px;
+    justify-content:center;margin:6px 0 18px;
+    color:var(--soft);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+  }
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--mint-deep)}
+  .brand .dot.c{background:var(--coral-deep)}
+
+  .kicker{
+    display:inline-block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--coral-deep);font-weight:700;margin-bottom:12px;
+    background:#fdeef0;padding:6px 14px;border-radius:999px;
+  }
+  h1{font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-.01em;margin-bottom:14px}
+  h1 .grad{
+    background:linear-gradient(100deg,var(--mint-deep),var(--coral-deep));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  h2{font-size:22px;font-weight:800;line-height:1.2;margin-bottom:6px}
+  .lead{font-size:16px;line-height:1.65;color:var(--soft)}
+
+  /* ===== Tarjeta portada ===== */
+  .cover{
+    background:var(--card);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:30px 26px 34px;text-align:center;
+    border:1px solid var(--line);
+  }
+  .cover .heart{font-size:34px;margin-bottom:8px}
+  .balance{
+    display:flex;align-items:stretch;gap:10px;margin:22px 0 6px;
+  }
+  .balance .pill{
+    flex:1;border-radius:16px;padding:14px 10px;color:#fff;font-weight:700;
+    display:flex;flex-direction:column;gap:3px;align-items:center;
+  }
+  .balance .pill small{font-weight:600;font-size:11px;opacity:.92;letter-spacing:.04em}
+  .pill.cap{background:linear-gradient(160deg,#b9e0d2,var(--mint-deep))}
+  .pill.dem{background:linear-gradient(160deg,#f6c0c9,var(--coral-deep))}
+  .vs{align-self:center;font-weight:800;color:var(--soft);font-size:13px}
+
+  /* ===== Mapa de progresión ===== */
+  .progress-map{margin-top:6px}
+  .step{
+    position:relative;display:flex;gap:14px;align-items:flex-start;
+    padding:0 0 4px 0;
+  }
+  .step .rail{display:flex;flex-direction:column;align-items:center;flex:0 0 auto}
+  .step .node{
+    width:34px;height:34px;border-radius:50%;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:14px;color:#fff;
+    box-shadow:0 4px 10px rgba(95,174,147,.35);
+  }
+  .step .bar{width:3px;flex:1;background:linear-gradient(var(--mint),var(--coral));border-radius:3px;margin:4px 0;min-height:18px}
+  .step:last-child .bar{display:none}
+  .step .body{
+    flex:1;background:var(--card);border:1px solid var(--line);
+    border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 6px 16px rgba(120,100,80,.07);
+  }
+  .step .body h3{font-size:16px;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .step .body p{font-size:14px;line-height:1.55;color:var(--soft)}
+  .tag{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;background:#eef7f3;color:var(--mint-deep)}
+  .tag.mid{background:#fff3e8;color:#c98a3e}
+  .tag.top{background:#fdeef0;color:var(--coral-deep)}
+
+  /* nodos coloreados según intensidad */
+  .n1{background:#7cc3a8}.n2{background:#6bbb9e}
+  .n3{background:#e8b06a}.n4{background:#e79788}.n5{background:var(--coral-deep)}
+
+  /* ===== Bloque "recuerda" ===== */
+  .note{
+    margin-top:8px;background:linear-gradient(160deg,#fdf6ef,#fbeef0);
+    border:1px solid var(--line);border-radius:18px;padding:18px 20px;text-align:center;
+  }
+  .note .heart{font-size:24px}
+  .note p{font-size:15px;line-height:1.6;color:var(--soft);margin-top:6px}
+  .note .sign{margin-top:10px;font-weight:800;color:var(--coral-deep);font-style:italic;font-size:17px}
+
+  /* ===== Navegación inferior ===== */
+  #nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 20px calc(14px + env(safe-area-inset-bottom));
+    background:linear-gradient(0deg,var(--bg) 55%,transparent);
+  }
+  .dots{display:flex;gap:7px;align-items:center}
+  .dots i{width:8px;height:8px;border-radius:50%;background:#d9cebb;transition:all .3s;cursor:pointer}
+  .dots i.on{background:var(--coral-deep);width:22px;border-radius:4px}
+  .btn{
+    border:none;cursor:pointer;font-weight:700;font-size:15px;
+    padding:12px 22px;border-radius:999px;background:var(--ink);color:#fff;
+    box-shadow:0 8px 18px rgba(58,58,58,.22);transition:transform .12s, opacity .2s;
+  }
+  .btn:active{transform:scale(.96)}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+  .btn:disabled{opacity:.35;pointer-events:none}
+
+  .footer-tip{position:fixed;top:14px;right:16px;z-index:20;font-size:11px;color:var(--soft);opacity:.7}
+
+  @media(max-width:380px){h1{font-size:26px}.balance .pill{padding:12px 6px}}
+</style>
+</head>
+<body>
+
+<div class="footer-tip">desliza →</div>
+
+<div id="deck">
+
+  <!-- ===== Parte 0 · Portada ===== -->
+  <section class="slide active">
+    <div class="inner">
+      <div class="brand"><span class="dot"></span>pilates reformer<span class="dot c"></span></div>
+      <div class="cover">
+        <div class="heart">🤍</div>
+        <div class="kicker">Para ti, después de tu sesión</div>
+        <h1>Del ejercicio que te cuesta…<br><span class="grad">a tu mejor versión</span></h1>
+        <p class="lead">Cada ejercicio se construye por partes. No se trata de hacerlo perfecto hoy,
+        sino de avanzar al siguiente paso cuando tu cuerpo está listo.</p>
+        <div class="balance">
+          <div class="pill cap"><span>Capacidad</span><small>lo que tu cuerpo puede hoy</small></div>
+          <div class="vs">vs</div>
+          <div class="pill dem"><span>Demanda</span><small>lo que pide el ejercicio</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Parte 1 · La progresión ===== -->
+  <section class="slide">
+    <div class="inner">
+      <div class="brand"><span class="dot"></span>tu progresión<span class="dot c"></span></div>
+      <span class="kicker">El ejercicio · paso a paso</span>
+      <h2>Una progresión, 5 versiones</h2>
+      <p class="lead" style="margin-bottom:18px">Empezamos por el control y sumamos demanda
+      poco a poco. Sube de nivel solo cuando el anterior se siente <b>estable y sin dolor</b>.</p>
+
+      <div class="progress-map">
+        <div class="step">
+          <div class="rail"><div class="node n1">1</div><div class="bar"></div></div>
+          <div class="body">
+            <h3>Control básico <span class="tag">Base</span></h3>
+            <p>Columna neutra y respiración. Aprendes a activar el centro sin tensión en el cuello.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="rail"><div class="node n2">2</div><div class="bar"></div></div>
+          <div class="body">
+            <h3>Pierna en tabletop <span class="tag">Base</span></h3>
+            <p>Una pierna a 90°, manteniendo la pelvis quieta. Aparece la demanda de estabilidad.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="rail"><div class="node n3">3</div><div class="bar"></div></div>
+          <div class="body">
+            <h3>Rotación de columna <span class="tag mid">Intermedio</span></h3>
+            <p>Añadimos giro controlado del tronco sin perder el centro ni la base.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="rail"><div class="node n4">4</div><div class="bar"></div></div>
+          <div class="body">
+            <h3>Crunch sin rotación <span class="tag mid">Intermedio</span></h3>
+            <p>Flexión de tronco con control, integrando fuerza abdominal a la estabilidad.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="rail"><div class="node n5">5</div><div class="bar"></div></div>
+          <div class="body">
+            <h3>Cris-cross completo · Cross-over <span class="tag top">Avanzado</span></h3>
+            <p>Flexión + rotación coordinadas. Tu mejor versión del ejercicio, con control total.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Parte 2 · Cómo sé que voy bien ===== -->
+  <section class="slide">
+    <div class="inner">
+      <div class="brand"><span class="dot"></span>tu guía<span class="dot c"></span></div>
+      <span class="kicker">¿Cómo sé que estoy lista para subir?</span>
+      <h2>Demanda ≤ Capacidad</h2>
+      <p class="lead" style="margin-bottom:18px">Cuando el ejercicio entra dentro de lo que tu
+      cuerpo puede hoy, <b>puedes hacerlo con calidad</b>. Esa es la señal verde.</p>
+
+      <div class="step"><div class="rail"><div class="node n1">✓</div><div class="bar"></div></div>
+        <div class="body"><h3>Respiras con normalidad</h3><p>Sin aguantar el aire ni apretar la mandíbula.</p></div></div>
+      <div class="step"><div class="rail"><div class="node n2">✓</div><div class="bar"></div></div>
+        <div class="body"><h3>Mantienes la técnica</h3><p>La columna y la pelvis se quedan donde deben durante todo el movimiento.</p></div></div>
+      <div class="step"><div class="rail"><div class="node n3">✓</div><div class="bar"></div></div>
+        <div class="body"><h3>Sin dolor</h3><p>Esfuerzo sí; dolor articular o pinchazos, no. Si aparece, bajamos un paso.</p></div></div>
+      <div class="step"><div class="rail"><div class="node n5">✓</div></div>
+        <div class="body"><h3>Completas las repeticiones con control</h3><p>Las últimas se ven igual de cuidadas que las primeras.</p></div></div>
+
+      <div class="note">
+        <div class="heart">🤍</div>
+        <p>Si dudas en una o más respuestas, ese ejercicio todavía es <b>demasiado difícil</b>.
+        Vuelve un paso: más fácil hoy, construye tu base.</p>
+        <div class="sign">Tú puedes.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<nav id="nav">
+  <button class="btn ghost" id="prev">Atrás</button>
+  <div class="dots" id="dots"></div>
+  <button class="btn" id="next">Siguiente</button>
+</nav>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var dotsWrap=document.getElementById('dots');
+  var prev=document.getElementById('prev');
+  var next=document.getElementById('next');
+  var i=0;
+  slides.forEach(function(_,k){
+    var d=document.createElement('i');
+    d.addEventListener('click',function(){go(k)});
+    dotsWrap.appendChild(d);
+  });
+  var dots=[].slice.call(dotsWrap.children);
+  function render(){
+    slides.forEach(function(s,k){s.classList.toggle('active',k===i);if(k===i)s.scrollTop=0});
+    dots.forEach(function(d,k){d.classList.toggle('on',k===i)});
+    prev.disabled=(i===0);
+    next.textContent=(i===slides.length-1)?'Volver al inicio':'Siguiente';
+  }
+  function go(k){i=(k+slides.length)%slides.length;render()}
+  prev.addEventListener('click',function(){go(i-1)});
+  next.addEventListener('click',function(){i===slides.length-1?go(0):go(i+1)});
+  // swipe
+  var x0=null;
+  document.getElementById('deck').addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+  document.getElementById('deck').addEventListener('touchend',function(e){
+    if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;
+    if(Math.abs(dx)>55){dx<0?go(i+1):go(i-1)}x0=null;
+  },{passive:true});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight')go(i+1);if(e.key==='ArrowLeft')go(i-1);
+  });
+  render();
+})();
+</script>
+</body>
+</html>
