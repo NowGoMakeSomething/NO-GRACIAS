@@ -7,13 +7,13 @@
 <title>Tu progresión · Pilates Reformer</title>
 <style>
   :root{
-    --bg:#f3ede2;            /* crema de fondo */
+    --bg:#f3ede2;
     --card:#ffffff;
-    --ink:#3a3a3a;          /* texto principal */
-    --soft:#7c7368;         /* texto secundario */
-    --mint:#a9d8c6;         /* capacidad */
+    --ink:#3a3a3a;
+    --soft:#7c7368;
+    --mint:#a9d8c6;
     --mint-deep:#5fae93;
-    --coral:#f0a9b4;        /* demanda */
+    --coral:#f0a9b4;
     --coral-deep:#e07f8f;
     --line:#e6ddcf;
     --shadow:0 14px 34px rgba(120,100,80,.16);
@@ -31,53 +31,49 @@
     overflow:hidden;
   }
 
-  /* ===== Estructura del "deck" ===== */
   #deck{position:relative;height:100dvh;width:100%;overflow:hidden}
   .slide{
     position:absolute;inset:0;
     display:flex;flex-direction:column;
     align-items:center;justify-content:flex-start;
-    padding:max(22px,env(safe-area-inset-top)) 20px 110px;
+    padding:max(20px,env(safe-area-inset-top)) 18px 108px;
     opacity:0;transform:translateY(14px) scale(.985);
     transition:opacity .45s ease, transform .45s ease;
     pointer-events:none;
     overflow-y:auto;-webkit-overflow-scrolling:touch;
   }
   .slide.active{opacity:1;transform:none;pointer-events:auto}
-  .inner{width:100%;max-width:520px;margin:0 auto}
+  .inner{width:100%;max-width:540px;margin:0 auto}
 
-  /* ===== Encabezado de marca ===== */
   .brand{
     display:flex;align-items:center;gap:9px;
-    justify-content:center;margin:6px 0 18px;
+    justify-content:center;margin:4px 0 16px;
     color:var(--soft);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
   }
   .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--mint-deep)}
   .brand .dot.c{background:var(--coral-deep)}
 
   .kicker{
-    display:inline-block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    display:inline-block;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
     color:var(--coral-deep);font-weight:700;margin-bottom:12px;
     background:#fdeef0;padding:6px 14px;border-radius:999px;
   }
-  h1{font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-.01em;margin-bottom:14px}
+  h1{font-size:29px;line-height:1.15;font-weight:800;letter-spacing:-.01em;margin-bottom:14px}
   h1 .grad{
     background:linear-gradient(100deg,var(--mint-deep),var(--coral-deep));
     -webkit-background-clip:text;background-clip:text;color:transparent;
   }
   h2{font-size:22px;font-weight:800;line-height:1.2;margin-bottom:6px}
-  .lead{font-size:16px;line-height:1.65;color:var(--soft)}
+  .lead{font-size:15.5px;line-height:1.65;color:var(--soft)}
 
-  /* ===== Tarjeta portada ===== */
+  /* ===== Portada ===== */
   .cover{
     background:var(--card);border-radius:var(--radius);
-    box-shadow:var(--shadow);padding:30px 26px 34px;text-align:center;
+    box-shadow:var(--shadow);padding:28px 24px 30px;text-align:center;
     border:1px solid var(--line);
   }
-  .cover .heart{font-size:34px;margin-bottom:8px}
-  .balance{
-    display:flex;align-items:stretch;gap:10px;margin:22px 0 6px;
-  }
+  .cover .heart{font-size:32px;margin-bottom:6px}
+  .balance{display:flex;align-items:stretch;gap:10px;margin:22px 0 4px}
   .balance .pill{
     flex:1;border-radius:16px;padding:14px 10px;color:#fff;font-weight:700;
     display:flex;flex-direction:column;gap:3px;align-items:center;
@@ -87,18 +83,45 @@
   .pill.dem{background:linear-gradient(160deg,#f6c0c9,var(--coral-deep))}
   .vs{align-self:center;font-weight:800;color:var(--soft);font-size:13px}
 
-  /* ===== Mapa de progresión ===== */
-  .progress-map{margin-top:6px}
-  .step{
-    position:relative;display:flex;gap:14px;align-items:flex-start;
-    padding:0 0 4px 0;
+  /* ===== Personalización ===== */
+  .person{
+    margin-top:18px;text-align:left;border-top:1px dashed var(--line);padding-top:18px;
   }
+  .person .row{display:flex;gap:10px;margin-bottom:12px}
+  .field{flex:1;display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);font-weight:700}
+  .field input{
+    font:inherit;font-size:15px;color:var(--ink);
+    border:1px solid var(--line);border-radius:12px;padding:11px 13px;background:#fbf8f2;
+  }
+  .field input:focus{outline:none;border-color:var(--coral)}
+  .levelpick label{margin-bottom:7px;display:block}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{
+    flex:1;min-width:44px;text-align:center;cursor:pointer;
+    border:1px solid var(--line);border-radius:12px;padding:9px 4px;
+    font-weight:700;font-size:14px;color:var(--soft);background:#fbf8f2;transition:all .15s;
+  }
+  .chip.sel{background:var(--coral-deep);color:#fff;border-color:var(--coral-deep);box-shadow:0 6px 14px rgba(224,127,143,.32)}
+
+  /* ===== Ilustración ===== */
+  .illus{width:100%;background:linear-gradient(170deg,#fbf8f2,#fff);border:1px solid var(--line);
+    border-radius:14px;margin-bottom:10px;padding:6px 6px 0}
+  .illus svg{display:block;width:100%;height:auto}
+  .reformer{stroke:#cdbfa8;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .reformer .head{fill:#fff}
+  .figure{stroke:var(--ink);fill:none;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+  .figure .head{fill:#fff;stroke-width:3}
+  .figure .accent{stroke:var(--coral-deep)}
+  .figure .arrow{stroke:var(--coral-deep);stroke-width:2.4}
+
+  /* ===== Mapa de progresión ===== */
+  .step{position:relative;display:flex;gap:13px;align-items:flex-start}
   .step .rail{display:flex;flex-direction:column;align-items:center;flex:0 0 auto}
   .step .node{
     width:34px;height:34px;border-radius:50%;flex:0 0 auto;
     display:flex;align-items:center;justify-content:center;
-    font-weight:800;font-size:14px;color:#fff;
-    box-shadow:0 4px 10px rgba(95,174,147,.35);
+    font-weight:800;font-size:14px;color:#fff;box-shadow:0 4px 10px rgba(95,174,147,.35);
   }
   .step .bar{width:3px;flex:1;background:linear-gradient(var(--mint),var(--coral));border-radius:3px;margin:4px 0;min-height:18px}
   .step:last-child .bar{display:none}
@@ -107,56 +130,72 @@
     border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 6px 16px rgba(120,100,80,.07);
   }
   .step .body h3{font-size:16px;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .step .body p{font-size:14px;line-height:1.55;color:var(--soft)}
+  .cue{font-size:14px;line-height:1.55;color:var(--soft);border-radius:8px;padding:2px 4px;margin:-2px -4px;transition:background .15s}
+  .cue[contenteditable="true"]{cursor:text}
+  .cue:focus{outline:none;background:#fbf6ef;box-shadow:inset 0 0 0 1px var(--coral)}
   .tag{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
     padding:3px 9px;border-radius:999px;background:#eef7f3;color:var(--mint-deep)}
   .tag.mid{background:#fff3e8;color:#c98a3e}
   .tag.top{background:#fdeef0;color:var(--coral-deep)}
+  .n1{background:#7cc3a8}.n2{background:#6bbb9e}.n3{background:#e8b06a}.n4{background:#e79788}.n5{background:var(--coral-deep)}
 
-  /* nodos coloreados según intensidad */
-  .n1{background:#7cc3a8}.n2{background:#6bbb9e}
-  .n3{background:#e8b06a}.n4{background:#e79788}.n5{background:var(--coral-deep)}
+  .editnote{font-size:11.5px;color:var(--soft);text-align:center;margin:2px 0 16px;opacity:.85}
+  .editnote b{color:var(--coral-deep)}
 
-  /* ===== Bloque "recuerda" ===== */
-  .note{
-    margin-top:8px;background:linear-gradient(160deg,#fdf6ef,#fbeef0);
-    border:1px solid var(--line);border-radius:18px;padding:18px 20px;text-align:center;
-  }
+  .note{margin-top:8px;background:linear-gradient(160deg,#fdf6ef,#fbeef0);
+    border:1px solid var(--line);border-radius:18px;padding:18px 20px;text-align:center}
   .note .heart{font-size:24px}
   .note p{font-size:15px;line-height:1.6;color:var(--soft);margin-top:6px}
   .note .sign{margin-top:10px;font-weight:800;color:var(--coral-deep);font-style:italic;font-size:17px}
 
-  /* ===== Navegación inferior ===== */
-  #nav{
-    position:fixed;left:0;right:0;bottom:0;z-index:20;
-    display:flex;align-items:center;justify-content:space-between;gap:12px;
-    padding:14px 20px calc(14px + env(safe-area-inset-bottom));
-    background:linear-gradient(0deg,var(--bg) 55%,transparent);
-  }
+  /* ===== Nav ===== */
+  #nav{position:fixed;left:0;right:0;bottom:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:13px 18px calc(13px + env(safe-area-inset-bottom));
+    background:linear-gradient(0deg,var(--bg) 55%,transparent)}
   .dots{display:flex;gap:7px;align-items:center}
   .dots i{width:8px;height:8px;border-radius:50%;background:#d9cebb;transition:all .3s;cursor:pointer}
   .dots i.on{background:var(--coral-deep);width:22px;border-radius:4px}
-  .btn{
-    border:none;cursor:pointer;font-weight:700;font-size:15px;
-    padding:12px 22px;border-radius:999px;background:var(--ink);color:#fff;
-    box-shadow:0 8px 18px rgba(58,58,58,.22);transition:transform .12s, opacity .2s;
-  }
+  .btn{border:none;cursor:pointer;font-weight:700;font-size:15px;
+    padding:12px 20px;border-radius:999px;background:var(--ink);color:#fff;
+    box-shadow:0 8px 18px rgba(58,58,58,.22);transition:transform .12s, opacity .2s}
   .btn:active{transform:scale(.96)}
   .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
   .btn:disabled{opacity:.35;pointer-events:none}
 
-  .footer-tip{position:fixed;top:14px;right:16px;z-index:20;font-size:11px;color:var(--soft);opacity:.7}
+  .toolbar{position:fixed;top:12px;right:14px;z-index:21;display:flex;gap:8px;align-items:center}
+  .toolbar .mini{font-size:12px;font-weight:700;color:var(--ink);background:#fff;border:1px solid var(--line);
+    border-radius:999px;padding:7px 13px;cursor:pointer;box-shadow:0 4px 10px rgba(120,100,80,.12)}
+  .hint{position:fixed;top:14px;left:16px;z-index:20;font-size:11px;color:var(--soft);opacity:.7}
 
   @media(max-width:380px){h1{font-size:26px}.balance .pill{padding:12px 6px}}
+
+  /* ===== Impresión / PDF ===== */
+  @media print{
+    @page{margin:14mm}
+    #nav,.toolbar,.hint{display:none!important}
+    body{overflow:visible;background:#fff;height:auto}
+    #deck{position:static;height:auto;overflow:visible}
+    .slide{position:static;opacity:1!important;transform:none!important;
+      pointer-events:auto;display:block;overflow:visible;padding:0 0 0 0;
+      page-break-after:always;min-height:auto}
+    .slide:last-child{page-break-after:auto}
+    .cover,.step .body,.note,.illus{box-shadow:none}
+    .chip{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
 </style>
 </head>
 <body>
 
-<div class="footer-tip">desliza →</div>
+<div class="hint">desliza →</div>
+<div class="toolbar">
+  <button class="mini" id="printBtn">🖨️ PDF</button>
+</div>
 
 <div id="deck">
 
-  <!-- ===== Parte 0 · Portada ===== -->
+  <!-- ===== Parte 0 · Portada + personalización ===== -->
   <section class="slide active">
     <div class="inner">
       <div class="brand"><span class="dot"></span>pilates reformer<span class="dot c"></span></div>
@@ -171,6 +210,23 @@
           <div class="vs">vs</div>
           <div class="pill dem"><span>Demanda</span><small>lo que pide el ejercicio</small></div>
         </div>
+
+        <div class="person">
+          <div class="row">
+            <div class="field"><label>Para</label><input id="pName" data-store="text" placeholder="Nombre de la clienta"></div>
+            <div class="field"><label>Fecha</label><input id="pDate" data-store="text" placeholder="dd/mm"></div>
+          </div>
+          <div class="field levelpick">
+            <label>Tu nivel actual en este ejercicio</label>
+            <div class="chips" id="levelChips">
+              <div class="chip" data-lvl="1">1</div>
+              <div class="chip" data-lvl="2">2</div>
+              <div class="chip" data-lvl="3">3</div>
+              <div class="chip" data-lvl="4">4</div>
+              <div class="chip" data-lvl="5">5</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -181,43 +237,49 @@
       <div class="brand"><span class="dot"></span>tu progresión<span class="dot c"></span></div>
       <span class="kicker">El ejercicio · paso a paso</span>
       <h2>Una progresión, 5 versiones</h2>
-      <p class="lead" style="margin-bottom:18px">Empezamos por el control y sumamos demanda
+      <p class="lead" style="margin-bottom:14px">Empezamos por el control y sumamos demanda
       poco a poco. Sube de nivel solo cuando el anterior se siente <b>estable y sin dolor</b>.</p>
+      <p class="editnote">✎ La kine puede <b>tocar cualquier texto</b> de las tarjetas y escribir su propia indicación.</p>
 
       <div class="progress-map">
         <div class="step">
           <div class="rail"><div class="node n1">1</div><div class="bar"></div></div>
           <div class="body">
+            <div class="illus" data-pose="1"></div>
             <h3>Control básico <span class="tag">Base</span></h3>
-            <p>Columna neutra y respiración. Aprendes a activar el centro sin tensión en el cuello.</p>
+            <p class="cue" data-store="html" id="cue1">Columna neutra y respiración. Aprendes a activar el centro sin tensión en el cuello.</p>
           </div>
         </div>
         <div class="step">
           <div class="rail"><div class="node n2">2</div><div class="bar"></div></div>
           <div class="body">
+            <div class="illus" data-pose="2"></div>
             <h3>Pierna en tabletop <span class="tag">Base</span></h3>
-            <p>Una pierna a 90°, manteniendo la pelvis quieta. Aparece la demanda de estabilidad.</p>
+            <p class="cue" data-store="html" id="cue2">Una pierna a 90°, manteniendo la pelvis quieta. Aparece la demanda de estabilidad.</p>
           </div>
         </div>
         <div class="step">
           <div class="rail"><div class="node n3">3</div><div class="bar"></div></div>
           <div class="body">
+            <div class="illus" data-pose="3"></div>
             <h3>Rotación de columna <span class="tag mid">Intermedio</span></h3>
-            <p>Añadimos giro controlado del tronco sin perder el centro ni la base.</p>
+            <p class="cue" data-store="html" id="cue3">Añadimos giro controlado del tronco sin perder el centro ni la base.</p>
           </div>
         </div>
         <div class="step">
           <div class="rail"><div class="node n4">4</div><div class="bar"></div></div>
           <div class="body">
+            <div class="illus" data-pose="4"></div>
             <h3>Crunch sin rotación <span class="tag mid">Intermedio</span></h3>
-            <p>Flexión de tronco con control, integrando fuerza abdominal a la estabilidad.</p>
+            <p class="cue" data-store="html" id="cue4">Flexión de tronco con control, integrando fuerza abdominal a la estabilidad.</p>
           </div>
         </div>
         <div class="step">
           <div class="rail"><div class="node n5">5</div><div class="bar"></div></div>
           <div class="body">
+            <div class="illus" data-pose="5"></div>
             <h3>Cris-cross completo · Cross-over <span class="tag top">Avanzado</span></h3>
-            <p>Flexión + rotación coordinadas. Tu mejor versión del ejercicio, con control total.</p>
+            <p class="cue" data-store="html" id="cue5">Flexión + rotación coordinadas. Tu mejor versión del ejercicio, con control total.</p>
           </div>
         </div>
       </div>
@@ -234,13 +296,13 @@
       cuerpo puede hoy, <b>puedes hacerlo con calidad</b>. Esa es la señal verde.</p>
 
       <div class="step"><div class="rail"><div class="node n1">✓</div><div class="bar"></div></div>
-        <div class="body"><h3>Respiras con normalidad</h3><p>Sin aguantar el aire ni apretar la mandíbula.</p></div></div>
+        <div class="body"><h3>Respiras con normalidad</h3><p class="cue">Sin aguantar el aire ni apretar la mandíbula.</p></div></div>
       <div class="step"><div class="rail"><div class="node n2">✓</div><div class="bar"></div></div>
-        <div class="body"><h3>Mantienes la técnica</h3><p>La columna y la pelvis se quedan donde deben durante todo el movimiento.</p></div></div>
+        <div class="body"><h3>Mantienes la técnica</h3><p class="cue">La columna y la pelvis se quedan donde deben durante todo el movimiento.</p></div></div>
       <div class="step"><div class="rail"><div class="node n3">✓</div><div class="bar"></div></div>
-        <div class="body"><h3>Sin dolor</h3><p>Esfuerzo sí; dolor articular o pinchazos, no. Si aparece, bajamos un paso.</p></div></div>
+        <div class="body"><h3>Sin dolor</h3><p class="cue">Esfuerzo sí; dolor articular o pinchazos, no. Si aparece, bajamos un paso.</p></div></div>
       <div class="step"><div class="rail"><div class="node n5">✓</div></div>
-        <div class="body"><h3>Completas las repeticiones con control</h3><p>Las últimas se ven igual de cuidadas que las primeras.</p></div></div>
+        <div class="body"><h3>Completas las repeticiones con control</h3><p class="cue">Las últimas se ven igual de cuidadas que las primeras.</p></div></div>
 
       <div class="note">
         <div class="heart">🤍</div>
@@ -261,16 +323,93 @@
 
 <script>
 (function(){
+  /* ---------- Ilustraciones (SVG line-art en el Reformer) ---------- */
+  var REFORMER =
+    '<line x1="14" y1="128" x2="226" y2="128"/>'+
+    '<line x1="24" y1="128" x2="24" y2="136"/>'+
+    '<line x1="216" y1="128" x2="216" y2="136"/>'+
+    '<rect x="44" y="106" width="150" height="15" rx="5"/>'+
+    '<rect x="50" y="97" width="9" height="9" rx="2"/>'+
+    '<rect x="62" y="97" width="9" height="9" rx="2"/>'+
+    '<path d="M24 114 q4 -5 7 0 t7 0 t6 0"/>'+
+    '<line x1="200" y1="106" x2="200" y2="78"/>'+
+    '<line x1="192" y1="78" x2="210" y2="78"/>';
+
+  var POSES = {
+    1:  /* Control básico: supino, rodillas flexionadas, pies en footbar */
+      '<circle class="head" cx="84" cy="92" r="7"/>'+
+      '<path d="M90 96 L138 100"/>'+
+      '<path d="M92 98 L122 103"/>'+
+      '<path class="accent" d="M138 100 L166 86 L198 86"/>'+
+      '<path d="M138 100 L162 90 L198 90"/>',
+    2:  /* Pierna en tabletop: una pierna a 90° */
+      '<circle class="head" cx="84" cy="92" r="7"/>'+
+      '<path d="M90 96 L138 100"/>'+
+      '<path d="M92 98 L122 103"/>'+
+      '<path class="accent" d="M138 100 L138 80 L160 80"/>'+
+      '<path d="M138 100 L166 88 L198 88"/>',
+    3:  /* Rotación de columna: sentada, tronco girado */
+      '<circle class="head" cx="120" cy="74" r="7"/>'+
+      '<path d="M118 104 L121 82"/>'+
+      '<path class="accent" d="M120 86 L152 80"/>'+
+      '<path class="accent" d="M120 90 L152 86"/>'+
+      '<path d="M118 104 L142 108 L168 104"/>'+
+      '<path class="arrow" d="M132 64 q16 2 22 16"/>'+
+      '<path class="arrow" d="M150 80 l5 0 m-5 0 l1 -5"/>',
+    4:  /* Crunch sin rotación: tronco elevado, piernas tabletop */
+      '<circle class="head" cx="94" cy="86" r="7"/>'+
+      '<path class="accent" d="M99 90 Q114 95 134 100"/>'+
+      '<path d="M88 80 L99 90"/>'+
+      '<path d="M134 100 L134 82 L156 82"/>'+
+      '<path d="M134 100 L132 84 L154 84"/>',
+    5:  /* Cris-cross / cross-over: flexión + rotación */
+      '<circle class="head" cx="94" cy="86" r="7"/>'+
+      '<path class="accent" d="M99 90 Q114 96 132 100"/>'+
+      '<path class="accent" d="M99 90 L124 98"/>'+
+      '<path d="M132 100 L174 92"/>'+
+      '<path d="M132 100 L132 84 L152 84"/>'+
+      '<path class="arrow" d="M104 74 q16 0 22 12"/>'+
+      '<path class="arrow" d="M122 86 l5 -1 m-5 1 l0 -5"/>'
+  };
+  function buildSVG(pose){
+    return '<svg viewBox="0 0 240 140" preserveAspectRatio="xMidYMid meet">'+
+      '<g class="reformer">'+REFORMER+'</g>'+
+      '<g class="figure">'+POSES[pose]+'</g></svg>';
+  }
+  [].forEach.call(document.querySelectorAll('.illus[data-pose]'),function(el){
+    el.innerHTML=buildSVG(el.getAttribute('data-pose'));
+  });
+
+  /* ---------- Persistencia (localStorage) ---------- */
+  var KEY='pil_v1_';
+  function load(id,def){try{var v=localStorage.getItem(KEY+id);return v===null?def:v}catch(e){return def}}
+  function save(id,v){try{localStorage.setItem(KEY+id,v)}catch(e){}}
+
+  [].forEach.call(document.querySelectorAll('[data-store]'),function(el){
+    var id=el.id;if(!id)return;
+    var mode=el.getAttribute('data-store');
+    var saved=load(id,null);
+    if(saved!==null){ if(mode==='text')el.value=saved; else el.innerHTML=saved; }
+    var ev=(mode==='text')?'input':'blur';
+    el.addEventListener(ev,function(){ save(id, mode==='text'?el.value:el.innerHTML); });
+    if(mode==='html'){ el.setAttribute('contenteditable','true'); el.setAttribute('spellcheck','false'); }
+  });
+
+  /* nivel chips */
+  var chips=[].slice.call(document.querySelectorAll('#levelChips .chip'));
+  var savedLvl=load('level',null);
+  function paintLvl(v){chips.forEach(function(c){c.classList.toggle('sel',c.getAttribute('data-lvl')===v)})}
+  if(savedLvl)paintLvl(savedLvl);
+  chips.forEach(function(c){c.addEventListener('click',function(){
+    var v=c.getAttribute('data-lvl');paintLvl(v);save('level',v);
+  })});
+
+  /* ---------- Navegación ---------- */
   var slides=[].slice.call(document.querySelectorAll('.slide'));
   var dotsWrap=document.getElementById('dots');
-  var prev=document.getElementById('prev');
-  var next=document.getElementById('next');
+  var prev=document.getElementById('prev'),next=document.getElementById('next');
   var i=0;
-  slides.forEach(function(_,k){
-    var d=document.createElement('i');
-    d.addEventListener('click',function(){go(k)});
-    dotsWrap.appendChild(d);
-  });
+  slides.forEach(function(_,k){var d=document.createElement('i');d.addEventListener('click',function(){go(k)});dotsWrap.appendChild(d)});
   var dots=[].slice.call(dotsWrap.children);
   function render(){
     slides.forEach(function(s,k){s.classList.toggle('active',k===i);if(k===i)s.scrollTop=0});
@@ -281,16 +420,22 @@
   function go(k){i=(k+slides.length)%slides.length;render()}
   prev.addEventListener('click',function(){go(i-1)});
   next.addEventListener('click',function(){i===slides.length-1?go(0):go(i+1)});
-  // swipe
-  var x0=null;
-  document.getElementById('deck').addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
-  document.getElementById('deck').addEventListener('touchend',function(e){
-    if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;
-    if(Math.abs(dx)>55){dx<0?go(i+1):go(i-1)}x0=null;
+
+  var x0=null,y0=null,deck=document.getElementById('deck');
+  deck.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
+  deck.addEventListener('touchend',function(e){
+    if(x0===null)return;
+    var dx=e.changedTouches[0].clientX-x0, dy=e.changedTouches[0].clientY-y0;
+    if(Math.abs(dx)>55 && Math.abs(dx)>Math.abs(dy)){dx<0?go(i+1):go(i-1)}
+    x0=y0=null;
   },{passive:true});
   document.addEventListener('keydown',function(e){
+    if(e.target&&e.target.isContentEditable)return;
     if(e.key==='ArrowRight')go(i+1);if(e.key==='ArrowLeft')go(i-1);
   });
+
+  document.getElementById('printBtn').addEventListener('click',function(){window.print()});
+
   render();
 })();
 </script>
