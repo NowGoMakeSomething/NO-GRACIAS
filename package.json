@@ -1,0 +1,8 @@
+{
+  "name": "no-gracias",
+  "private": true,
+  "description": "Sitio del repo NO-GRACIAS. La landing del regalo de Pablo vive en pablo/ y usa una Netlify Function con Netlify Blobs para guardar los ratings.",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

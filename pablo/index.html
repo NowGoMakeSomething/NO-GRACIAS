@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Las Latas de Pablo 🥤 — regalo de cumpleaños</title>
+<meta name="description" content="21 latas de todo el mundo para Pablo. Probalas, calificalas de 1 a 5 latitas y dejá tu review.">
+<meta property="og:title" content="Las Latas de Pablo 🥤">
+<meta property="og:description" content="21 latas de todo el mundo. Probalas, calificalas de 1 a 5 latitas y dejá tu review.">
+<meta property="og:image" content="./assets/og.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFF7EC;
+    --ink:#27211B;
+    --cherry:#E5383B;
+    --blue:#1D53C4;
+    --sun:#FFC53D;
+    --lime:#57B84C;
+    --grape:#8B5CC7;
+    --card:#FFFFFF;
+    --muted:#8A7E70;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Outfit',system-ui,-apple-system,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    background-image:radial-gradient(rgba(229,56,59,.06) 1.6px, transparent 1.6px);
+    background-size:26px 26px;
+  }
+  .display{font-family:'Lilita One','Outfit',system-ui,sans-serif;font-weight:400}
+  a{color:var(--blue)}
+  button{font-family:inherit;cursor:pointer}
+  :focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
+
+  /* ---------- header ---------- */
+  header{max-width:1080px;margin:0 auto;padding:28px 18px 8px;text-align:center}
+  .bunting{font-size:26px;letter-spacing:6px;user-select:none}
+  h1{
+    font-size:clamp(40px,8.5vw,76px);
+    line-height:.95;
+    margin:10px 0 6px;
+    color:var(--cherry);
+    text-shadow:3px 3px 0 var(--sun), 6px 6px 0 rgba(39,33,27,.14);
+    transform:rotate(-1.5deg);
+  }
+  h1 .azul{color:var(--blue)}
+  .sub{font-size:clamp(16px,3.4vw,20px);font-weight:600;max-width:620px;margin:8px auto 0;color:var(--ink)}
+  .sub small{display:block;color:var(--muted);font-weight:400;margin-top:6px;font-size:.82em}
+
+  .hero{
+    max-width:1080px;margin:22px auto 0;padding:0 18px;
+    display:grid;gap:18px;grid-template-columns:1fr;align-items:stretch;
+  }
+  @media(min-width:760px){.hero{grid-template-columns:340px 1fr}}
+  .polaroid{
+    background:#fff;border:3px solid var(--ink);border-radius:var(--radius);
+    box-shadow:8px 8px 0 rgba(39,33,27,.18);
+    padding:12px 12px 14px;transform:rotate(-2deg);
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .polaroid img{width:100%;border-radius:12px;display:block;object-fit:cover;aspect-ratio:3/4;background:#f3ede4}
+  .polaroid figcaption{text-align:center;font-weight:600;font-size:15px}
+  .scorebox{
+    display:flex;flex-direction:column;gap:14px;justify-content:center;
+  }
+  .statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .stat{
+    background:var(--card);border:3px solid var(--ink);border-radius:var(--radius);
+    box-shadow:6px 6px 0 rgba(39,33,27,.15);padding:14px 10px;text-align:center;
+  }
+  .stat b{display:block;font-size:clamp(26px,5vw,40px);line-height:1.05}
+  .stat span{font-size:13px;color:var(--muted);font-weight:600}
+  .progress-wrap{background:var(--card);border:3px solid var(--ink);border-radius:var(--radius);box-shadow:6px 6px 0 rgba(39,33,27,.15);padding:16px}
+  .progress-label{display:flex;justify-content:space-between;font-weight:800;margin-bottom:8px;font-size:15px}
+  .bar{height:22px;border:3px solid var(--ink);border-radius:999px;background:#F3EADC;overflow:hidden}
+  .bar > div{height:100%;width:0%;background:linear-gradient(90deg,var(--sun),var(--cherry));border-radius:999px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .modebanner{font-size:13.5px;font-weight:600;text-align:center;padding:9px 12px;border-radius:12px;border:2px dashed var(--ink)}
+  .modebanner.remote{background:#E8F6E4;border-color:var(--lime)}
+  .modebanner.local{background:#FFF1D6;border-color:var(--sun)}
+
+  /* ---------- tabs ---------- */
+  nav.tabs{
+    position:sticky;top:10px;z-index:30;
+    display:flex;gap:10px;justify-content:center;margin:26px auto 6px;max-width:520px;padding:0 18px;
+  }
+  .tab{
+    flex:1;border:3px solid var(--ink);border-radius:999px;padding:12px 10px;
+    background:var(--card);font-weight:800;font-size:16px;
+    box-shadow:4px 4px 0 rgba(39,33,27,.2);
+    transition:transform .12s, box-shadow .12s;
+  }
+  .tab[aria-selected="true"]{background:var(--cherry);color:#fff;transform:translateY(2px);box-shadow:2px 2px 0 rgba(39,33,27,.25)}
+  .tab:hover{transform:translateY(-1px)}
+
+  main{max-width:1080px;margin:0 auto;padding:16px 18px 80px}
+
+  /* ---------- grid ---------- */
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  @media(min-width:640px){.grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}}
+  .can-card{
+    background:var(--card);border:3px solid var(--ink);border-radius:var(--radius);
+    box-shadow:6px 6px 0 rgba(39,33,27,.15);
+    overflow:hidden;display:flex;flex-direction:column;text-align:left;padding:0;
+    transition:transform .14s, box-shadow .14s;
+  }
+  .can-card:hover{transform:translateY(-3px) rotate(-.4deg);box-shadow:8px 10px 0 rgba(39,33,27,.18)}
+  .can-card img{width:100%;aspect-ratio:4/5;object-fit:cover;border-bottom:3px solid var(--ink);background:#f3ede4}
+  .can-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .can-name{font-size:16.5px;line-height:1.15}
+  .can-desc{font-size:12.5px;color:var(--muted);font-weight:600}
+  .can-status{margin-top:auto;font-size:13px;font-weight:700}
+  .pill{
+    display:inline-block;background:var(--sun);border:2px solid var(--ink);border-radius:999px;
+    padding:4px 10px;font-size:12.5px;font-weight:800;
+  }
+  .pill.pend{background:#EFE6D8;color:var(--muted)}
+  .minicans{letter-spacing:1px;font-size:15px}
+  .review-snip{font-size:12.5px;color:var(--ink);font-style:italic;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+  /* ---------- ranking ---------- */
+  .rank-list{display:flex;flex-direction:column;gap:14px;max-width:720px;margin:0 auto}
+  .rank-item{
+    display:grid;grid-template-columns:56px 74px 1fr;gap:12px;align-items:center;
+    background:var(--card);border:3px solid var(--ink);border-radius:var(--radius);
+    box-shadow:6px 6px 0 rgba(39,33,27,.15);padding:12px;text-align:left;width:100%;
+  }
+  .rank-pos{font-size:28px;text-align:center}
+  .rank-item img{width:74px;height:92px;object-fit:cover;border:2px solid var(--ink);border-radius:10px;background:#f3ede4}
+  .rank-info h3{font-size:17px;margin-bottom:2px}
+  .rank-info .minicans{font-size:16px}
+  .rank-review{font-size:13.5px;font-style:italic;color:#4c443c;margin-top:4px}
+  .rank-date{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .section-title{font-size:24px;margin:26px 0 14px;text-align:center;color:var(--blue);transform:rotate(-1deg)}
+  .empty-note{text-align:center;color:var(--muted);font-weight:600;padding:30px 10px;font-size:15px}
+
+  .share-row{text-align:center;margin:26px 0 4px}
+  .btn{
+    display:inline-block;border:3px solid var(--ink);border-radius:999px;padding:13px 22px;
+    font-weight:800;font-size:16px;background:var(--card);
+    box-shadow:4px 4px 0 rgba(39,33,27,.22);text-decoration:none;color:var(--ink);
+    transition:transform .12s;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn.green{background:#42C25A;color:#fff}
+  .btn.red{background:var(--cherry);color:#fff}
+  .btn.ghost{background:transparent;box-shadow:none;border-style:dashed;font-weight:600;font-size:14px}
+
+  /* ---------- modal ---------- */
+  dialog{
+    border:none;background:transparent;padding:0;max-width:min(94vw,470px);width:100%;
+  }
+  dialog::backdrop{background:rgba(39,33,27,.55);backdrop-filter:blur(3px)}
+  .modal-inner{
+    background:var(--paper);border:3px solid var(--ink);border-radius:22px;
+    box-shadow:10px 10px 0 rgba(39,33,27,.3);padding:20px;position:relative;
+  }
+  .modal-close{
+    position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:50%;
+    border:3px solid var(--ink);background:#fff;font-size:18px;font-weight:800;line-height:1;
+  }
+  .modal-head{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+  .modal-head img{width:86px;height:110px;object-fit:cover;border:3px solid var(--ink);border-radius:12px;background:#f3ede4}
+  .modal-head h2{font-size:24px;line-height:1.05}
+  .modal-head p{font-size:13px;color:var(--muted);font-weight:600;margin-top:4px}
+  .rate-label{font-weight:800;font-size:14.5px;margin:12px 0 6px}
+  .cans-input{display:flex;gap:6px;justify-content:center;margin:4px 0 2px}
+  .can-btn{background:none;border:none;padding:4px;transition:transform .1s}
+  .can-btn:hover{transform:scale(1.12)}
+  .can-btn svg{width:44px;height:56px;display:block}
+  .rate-hint{text-align:center;font-weight:800;font-size:15px;min-height:22px;color:var(--cherry)}
+  textarea{
+    width:100%;min-height:96px;border:3px solid var(--ink);border-radius:14px;
+    padding:12px;font-family:inherit;font-size:15px;background:#fff;resize:vertical;
+  }
+  .modal-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .modal-actions .btn{flex:1;text-align:center;padding:12px 10px}
+  .modal-msg{font-size:13px;font-weight:700;text-align:center;margin-top:10px;min-height:18px}
+
+  footer{text-align:center;padding:30px 18px 46px;color:var(--muted);font-size:13.5px;font-weight:600}
+  footer .heart{color:var(--cherry)}
+
+  #confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:999}
+  .hidden{display:none !important}
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important;scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+<header>
+  <div class="bunting" aria-hidden="true">🎉🥤🎂🥤🎉</div>
+  <h1 class="display">LAS LATAS<br><span class="azul">DE PABLO</span></h1>
+  <p class="sub">Feliz cumple, Pablo 🎂 Te regalamos <strong>21 latas raras de todo el mundo</strong>.
+    Andá abriéndolas cuando quieras: calificá cada una de <strong>1 a 5 latitas</strong> y dejá tu veredicto.
+    <small>1 latita = horrible &nbsp;·&nbsp; 5 latitas = obra maestra. El que te las regaló está mirando 👀</small>
+  </p>
+</header>
+
+<section class="hero" aria-label="Resumen">
+  <figure class="polaroid">
+    <img id="pablo-img" src="./assets/pablo.jpg" alt="Pablo, el cumpleañero" loading="eager">
+    <figcaption>El catador oficial 🍹</figcaption>
+  </figure>
+  <div class="scorebox">
+    <div class="statrow">
+      <div class="stat"><b id="stat-done">0</b><span>probadas</span></div>
+      <div class="stat"><b id="stat-left">21</b><span>en la heladera</span></div>
+      <div class="stat"><b id="stat-avg">—</b><span>promedio</span></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Progreso de la misión</span><span id="progress-num">0 / 21</span></div>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="21" aria-valuenow="0" id="progress-bar" aria-label="Latas probadas"><div></div></div>
+    </div>
+    <p class="modebanner local" id="mode-banner" role="status">Conectando…</p>
+  </div>
+</section>
+
+<nav class="tabs" role="tablist" aria-label="Vistas">
+  <button class="tab" id="tab-coleccion" role="tab" aria-selected="true" aria-controls="view-coleccion">🥤 Colección</button>
+  <button class="tab" id="tab-ranking" role="tab" aria-selected="false" aria-controls="view-ranking">🏆 Ranking</button>
+</nav>
+
+<main>
+  <section id="view-coleccion" role="tabpanel" aria-labelledby="tab-coleccion">
+    <div class="grid" id="cans-grid"></div>
+  </section>
+
+  <section id="view-ranking" role="tabpanel" aria-labelledby="tab-ranking" class="hidden">
+    <h2 class="section-title display">🏆 El podio de Pablo</h2>
+    <div class="rank-list" id="rank-list"></div>
+    <div class="empty-note hidden" id="rank-empty">Todavía no probaste ninguna… ¡la heladera te espera! 🧊</div>
+    <h2 class="section-title display" id="pending-title">🧊 En la heladera</h2>
+    <div class="rank-list" id="pending-list"></div>
+    <div class="share-row">
+      <a class="btn green" id="share-wa" href="#" target="_blank" rel="noopener">📲 Compartir ranking por WhatsApp</a>
+    </div>
+  </section>
+</main>
+
+<dialog id="rate-modal" aria-labelledby="modal-title">
+  <form method="dialog" class="modal-inner" id="rate-form">
+    <button type="button" class="modal-close" id="modal-close" aria-label="Cerrar">✕</button>
+    <div class="modal-head">
+      <img id="modal-img" src="" alt="">
+      <div>
+        <h2 class="display" id="modal-title">Lata</h2>
+        <p id="modal-desc"></p>
+      </div>
+    </div>
+    <p class="rate-label" id="rate-label">¿Cuántas latitas se merece?</p>
+    <div class="cans-input" id="cans-input" role="radiogroup" aria-labelledby="rate-label"></div>
+    <p class="rate-hint" id="rate-hint">&nbsp;</p>
+    <label class="rate-label" for="review-input">Tu review (opcional pero fundamental)</label>
+    <textarea id="review-input" maxlength="600" placeholder="Ej: arranca dulce, termina en arrepentimiento…"></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn red" id="save-btn">💾 Guardar veredicto</button>
+      <button type="button" class="btn ghost hidden" id="remove-btn">Borrar rating</button>
+    </div>
+    <p class="modal-msg" id="modal-msg"></p>
+  </form>
+</dialog>
+
+<footer>
+  Hecho con <span class="heart">♥</span> para el cumple de Pablo · 21 latas, 0 excusas ·
+  <span id="sync-hint"></span>
+</footer>
+
+<script>
+"use strict";
+/* ============ datos ============ */
+const CANS = [
+  { slug:"fanta-china-manzana",       name:"Fanta Manzana 芬达",          desc:"Manzana verde · edición China" },
+  { slug:"fanta-china-pina",          name:"Fanta Piña 芬达",             desc:"Piña · edición China" },
+  { slug:"coca-cola-limon",           name:"Coca-Cola Limón Zero",        desc:"Limón sin azúcar · edición China" },
+  { slug:"warheads-green-apple",      name:"Warheads Sour Green Apple",   desc:"Soda ultra ácida de manzana verde" },
+  { slug:"warheads-blue-boba",        name:"Warheads Boba Blue Raspberry",desc:"Frambuesa azul ácida… ¡con boba!" },
+  { slug:"fanta-crimson-sour-cherry", name:"Fanta Crimson Sour Cherry",   desc:"Cereza ácida · edición Xbox 25" },
+  { slug:"fanta-berry",               name:"Fanta Berry",                 desc:"Frutos rojos, azul eléctrico" },
+  { slug:"dirty-mtn-dew-cream-soda",  name:"Dirty Mountain Dew",          desc:"Cream Soda Dew · rareza total" },
+  { slug:"fanta-pina-pomelo",         name:"Fanta Pineapple & Grapefruit",desc:"Piña + pomelo" },
+  { slug:"mountain-dew",              name:"Mountain Dew Citrus Blast",   desc:"Cítrico clásico verde flúo" },
+  { slug:"fanta-lemon",               name:"Fanta Lemon",                 desc:"Limón · edición ilustrada" },
+  { slug:"fanta-fruit-twist",         name:"Fanta Fruit Twist",           desc:"Mezcla frutal · UK" },
+  { slug:"mtn-dew-code-red",          name:"Mountain Dew Code Red",       desc:"Cereza roja intensa" },
+  { slug:"canada-dry-blackberry",     name:"Canada Dry Blackberry",       desc:"Ginger ale con mora" },
+  { slug:"fanta-peach",               name:"Fanta Peach",                 desc:"Durazno" },
+  { slug:"fanta-grape",               name:"Fanta Grape",                 desc:"Uva, la favorita del pueblo" },
+  { slug:"7up-cherry",                name:"7UP Cherry",                  desc:"Lima-limón con cereza" },
+  { slug:"fanta-pineapple",           name:"Fanta Pineapple",             desc:"Piña tropical" },
+  { slug:"fanta-strawberry",          name:"Fanta Strawberry",            desc:"Frutilla" },
+  { slug:"canada-dry-cherry",         name:"Canada Dry Cherry Splash",    desc:"Ginger ale con cereza" },
+  { slug:"7up-tropical",              name:"7UP Tropical",                desc:"Frutas tropicales" },
+];
+const TOTAL = CANS.length;
+const HINTS = ["", "1 · Horrible 🤢", "2 · Meh 😕", "3 · Está bien 🙂", "4 · Muy buena 😋", "5 · OBRA MAESTRA 🤩"];
+const API = "/api/latas";
+const LS_KEY = "latas-de-pablo-v1";
+
+/* Imagen hero generada (Higgsfield). Si no carga, cae a la foto real. */
+const HERO_URL = "https://d8j0ntlcm91z4.cloudfront.net/user_33kirTIHxiqBZT5J1S4sEclVsHo/hf_20260716_153450_150a0ba5-f0f2-423c-a67b-2e3004c00c0a.png";
+
+/* ============ estado ============ */
+let ratings = {};          // { slug: {rating, review, at} }
+let remoteMode = false;
+let pollTimer = null;
+let currentSlug = null;
+let pickedRating = 0;
+
+const $ = (id) => document.getElementById(id);
+
+/* ============ hero img ============ */
+(function initHero(){
+  const img = $("pablo-img");
+  if (HERO_URL && !HERO_URL.startsWith("__")) {
+    img.onerror = () => { img.onerror = null; img.src = "./assets/pablo.jpg"; };
+    img.src = HERO_URL;
+  } else {
+    img.src = "./assets/pablo.jpg";
+  }
+})();
+
+/* ============ SVG latita ============ */
+function canSVG(filled){
+  const body = filled ? "#E5383B" : "#EFE6D8";
+  const shine = filled ? "#F97B7D" : "#FFFFFF";
+  const stroke = "#27211B";
+  return `<svg viewBox="0 0 44 56" aria-hidden="true">
+    <rect x="7" y="10" width="30" height="40" rx="6" fill="${body}" stroke="${stroke}" stroke-width="3"/>
+    <rect x="12" y="16" width="7" height="28" rx="3.5" fill="${shine}" opacity=".8"/>
+    <rect x="5" y="6" width="34" height="7" rx="3.5" fill="#C9CDD4" stroke="${stroke}" stroke-width="3"/>
+    <circle cx="22" cy="9.5" r="2" fill="${stroke}"/>
+  </svg>`;
+}
+function miniCans(n){
+  let s = "";
+  for (let i = 1; i <= 5; i++) s += i <= n ? "🥤" : "▫️";
+  return s;
+}
+
+/* ============ persistencia ============ */
+function loadLocal(){
+  try { ratings = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { ratings = {}; }
+}
+function saveLocal(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(ratings)); } catch {}
+}
+async function fetchRemote(){
+  const res = await fetch(API, { headers: { accept: "application/json" } });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const body = await res.json();
+  if (!body || body.ok !== true || typeof body.data !== "object") throw new Error("respuesta rara");
+  return body.data || {};
+}
+async function pushRemote(payload){
+  const res = await fetch(API, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const body = await res.json();
+  if (!body || body.ok !== true) throw new Error("respuesta rara");
+  return body.data || {};
+}
+function setMode(remote){
+  remoteMode = remote;
+  const b = $("mode-banner");
+  if (remote) {
+    b.className = "modebanner remote";
+    b.textContent = "🟢 Conectado: los veredictos se guardan en la nube y se ven en vivo desde cualquier lado.";
+    $("sync-hint").textContent = "sincronizado en la nube ☁️";
+  } else {
+    b.className = "modebanner local";
+    b.textContent = "🟡 Modo local: los veredictos se guardan en este dispositivo. Usá el botón de WhatsApp para compartirlos.";
+    $("sync-hint").textContent = "modo local 📱";
+  }
+}
+async function initData(){
+  loadLocal();
+  render();
+  try {
+    const remote = await fetchRemote();
+    // merge: lo remoto manda; lo local pendiente que no exista remoto se sube
+    const pendingUp = Object.entries(ratings).filter(([slug]) => !(slug in remote));
+    ratings = { ...ratings, ...remote };
+    setMode(true);
+    saveLocal();
+    render();
+    for (const [slug, r] of pendingUp) {
+      try { ratings = await pushRemote({ slug, rating: r.rating, review: r.review || "" }); } catch {}
+    }
+    saveLocal();
+    render();
+    startPolling();
+  } catch {
+    setMode(false);
+  }
+}
+function startPolling(){
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    if (document.hidden) return;
+    try {
+      ratings = await fetchRemote();
+      saveLocal();
+      render();
+    } catch {}
+  }, 20000);
+}
+
+/* ============ render ============ */
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+}
+function fmtDate(iso){
+  try {
+    return new Date(iso).toLocaleDateString("es-AR", { day: "numeric", month: "short" });
+  } catch { return ""; }
+}
+function render(){
+  renderStats();
+  renderGrid();
+  renderRanking();
+}
+function renderStats(){
+  const done = CANS.filter(c => ratings[c.slug]?.rating).length;
+  const vals = CANS.map(c => ratings[c.slug]?.rating).filter(Boolean);
+  const avg = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+  $("stat-done").textContent = done;
+  $("stat-left").textContent = TOTAL - done;
+  $("stat-avg").textContent = avg ? avg.toFixed(1) + "🥤" : "—";
+  $("progress-num").textContent = done + " / " + TOTAL;
+  const bar = $("progress-bar");
+  bar.setAttribute("aria-valuenow", done);
+  bar.firstElementChild.style.width = (done / TOTAL * 100) + "%";
+}
+function renderGrid(){
+  const grid = $("cans-grid");
+  grid.innerHTML = "";
+  for (const can of CANS) {
+    const r = ratings[can.slug];
+    const btn = document.createElement("button");
+    btn.className = "can-card";
+    btn.setAttribute("aria-label", can.name + (r?.rating ? `, calificada con ${r.rating} de 5` : ", sin probar. Calificar"));
+    btn.innerHTML = `
+      <img src="./assets/cans/${can.slug}.jpg" alt="" loading="lazy">
+      <div class="can-body">
+        <div class="can-name display">${esc(can.name)}</div>
+        <div class="can-desc">${esc(can.desc)}</div>
+        <div class="can-status">
+          ${r?.rating
+            ? `<span class="minicans" aria-hidden="true">${miniCans(r.rating)}</span>
+               ${r.review ? `<div class="review-snip">“${esc(r.review)}”</div>` : ""}`
+            : `<span class="pill pend">🧊 Sin probar — ¡tocá para calificar!</span>`}
+        </div>
+      </div>`;
+    btn.addEventListener("click", () => openModal(can.slug));
+    grid.appendChild(btn);
+  }
+}
+function renderRanking(){
+  const rated = CANS.filter(c => ratings[c.slug]?.rating)
+    .sort((a, b) => (ratings[b.slug].rating - ratings[a.slug].rating) ||
+                    (new Date(ratings[a.slug].at || 0) - new Date(ratings[b.slug].at || 0)));
+  const pending = CANS.filter(c => !ratings[c.slug]?.rating);
+  const list = $("rank-list");
+  const pend = $("pending-list");
+  list.innerHTML = ""; pend.innerHTML = "";
+  $("rank-empty").classList.toggle("hidden", rated.length > 0);
+  const medals = ["🥇", "🥈", "🥉"];
+  rated.forEach((can, i) => {
+    const r = ratings[can.slug];
+    const el = document.createElement("button");
+    el.className = "rank-item";
+    el.setAttribute("aria-label", `Puesto ${i + 1}: ${can.name}, ${r.rating} de 5`);
+    el.innerHTML = `
+      <div class="rank-pos display">${medals[i] || "#" + (i + 1)}</div>
+      <img src="./assets/cans/${can.slug}.jpg" alt="">
+      <div class="rank-info">
+        <h3 class="display">${esc(can.name)}</h3>
+        <span class="minicans" aria-hidden="true">${miniCans(r.rating)}</span>
+        ${r.review ? `<div class="rank-review">“${esc(r.review)}”</div>` : ""}
+        ${r.at ? `<div class="rank-date">probada el ${fmtDate(r.at)}</div>` : ""}
+      </div>`;
+    el.addEventListener("click", () => openModal(can.slug));
+    list.appendChild(el);
+  });
+  $("pending-title").classList.toggle("hidden", pending.length === 0);
+  pending.forEach(can => {
+    const el = document.createElement("button");
+    el.className = "rank-item";
+    el.style.opacity = ".75";
+    el.setAttribute("aria-label", can.name + ", sin probar. Calificar");
+    el.innerHTML = `
+      <div class="rank-pos">🧊</div>
+      <img src="./assets/cans/${can.slug}.jpg" alt="">
+      <div class="rank-info"><h3 class="display">${esc(can.name)}</h3>
+      <span class="pill pend">sin probar</span></div>`;
+    el.addEventListener("click", () => openModal(can.slug));
+    pend.appendChild(el);
+  });
+  // WhatsApp
+  const lines = rated.map((can, i) =>
+    `${medals[i] || (i + 1) + "."} ${can.name} ${"🥤".repeat(ratings[can.slug].rating)}${ratings[can.slug].review ? ` — "${ratings[can.slug].review}"` : ""}`);
+  const txt = `🎂 RANKING DE LAS LATAS DE PABLO 🥤\n(${rated.length}/${TOTAL} probadas)\n\n` +
+    (lines.join("\n") || "Todavía no probé ninguna 😅") + "\n\n👉 " + location.href;
+  $("share-wa").href = "https://wa.me/?text=" + encodeURIComponent(txt);
+}
+
+/* ============ modal ============ */
+function openModal(slug){
+  currentSlug = slug;
+  const can = CANS.find(c => c.slug === slug);
+  const r = ratings[slug];
+  pickedRating = r?.rating || 0;
+  $("modal-title").textContent = can.name;
+  $("modal-desc").textContent = can.desc;
+  $("modal-img").src = `./assets/cans/${slug}.jpg`;
+  $("modal-img").alt = can.name;
+  $("review-input").value = r?.review || "";
+  $("modal-msg").textContent = "";
+  $("remove-btn").classList.toggle("hidden", !r?.rating);
+  drawCansInput();
+  $("rate-modal").showModal();
+}
+function drawCansInput(){
+  const wrap = $("cans-input");
+  wrap.innerHTML = "";
+  for (let i = 1; i <= 5; i++) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "can-btn";
+    b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", String(i === pickedRating));
+    b.setAttribute("aria-label", HINTS[i]);
+    b.innerHTML = canSVG(i <= pickedRating);
+    b.addEventListener("click", () => { pickedRating = i; drawCansInput(); });
+    wrap.appendChild(b);
+  }
+  $("rate-hint").textContent = pickedRating ? HINTS[pickedRating] : " ";
+}
+async function saveRating(){
+  if (!currentSlug) return;
+  if (!pickedRating) { $("modal-msg").textContent = "⚠️ Elegí de 1 a 5 latitas primero"; return; }
+  const review = $("review-input").value.trim();
+  const entry = { rating: pickedRating, review, at: new Date().toISOString() };
+  ratings[currentSlug] = entry;
+  saveLocal();
+  $("modal-msg").textContent = "Guardando…";
+  if (remoteMode) {
+    try {
+      ratings = await pushRemote({ slug: currentSlug, rating: entry.rating, review });
+      saveLocal();
+    } catch {
+      $("modal-msg").textContent = "⚠️ No se pudo sincronizar, quedó guardado en este dispositivo.";
+    }
+  }
+  render();
+  $("rate-modal").close();
+  confettiBurst();
+}
+async function removeRating(){
+  if (!currentSlug) return;
+  delete ratings[currentSlug];
+  saveLocal();
+  if (remoteMode) {
+    try { ratings = await pushRemote({ slug: currentSlug, remove: true }); saveLocal(); } catch {}
+  }
+  render();
+  $("rate-modal").close();
+}
+$("save-btn").addEventListener("click", saveRating);
+$("remove-btn").addEventListener("click", removeRating);
+$("modal-close").addEventListener("click", () => $("rate-modal").close());
+$("rate-modal").addEventListener("click", (e) => { if (e.target === e.currentTarget) $("rate-modal").close(); });
+
+/* ============ tabs ============ */
+function switchTab(which){
+  const col = which === "coleccion";
+  $("tab-coleccion").setAttribute("aria-selected", String(col));
+  $("tab-ranking").setAttribute("aria-selected", String(!col));
+  $("view-coleccion").classList.toggle("hidden", !col);
+  $("view-ranking").classList.toggle("hidden", col);
+}
+$("tab-coleccion").addEventListener("click", () => switchTab("coleccion"));
+$("tab-ranking").addEventListener("click", () => switchTab("ranking"));
+
+/* ============ confetti ============ */
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function confettiBurst(){
+  if (reduceMotion) return;
+  const canvas = $("confetti-canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = innerWidth; canvas.height = innerHeight;
+  const colors = ["#E5383B", "#FFC53D", "#1D53C4", "#57B84C", "#8B5CC7", "#FF8FA3"];
+  const parts = Array.from({ length: 130 }, () => ({
+    x: canvas.width / 2 + (Math.random() - .5) * 200,
+    y: canvas.height / 2,
+    vx: (Math.random() - .5) * 13,
+    vy: -Math.random() * 13 - 4,
+    s: Math.random() * 8 + 4,
+    c: colors[(Math.random() * colors.length) | 0],
+    r: Math.random() * Math.PI,
+    vr: (Math.random() - .5) * .3,
+  }));
+  let frames = 0;
+  (function tick(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of parts) {
+      p.x += p.vx; p.y += p.vy; p.vy += .35; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * .6);
+      ctx.restore();
+    }
+    if (++frames < 110) requestAnimationFrame(tick);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  })();
+}
+
+/* ============ go ============ */
+initData();
+</script>
+</body>
+</html>
